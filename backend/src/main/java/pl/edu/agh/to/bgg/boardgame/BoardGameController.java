@@ -9,6 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("boardgames")
+@CrossOrigin(origins = "http://localhost:5173")
 public class BoardGameController {
     private final BoardGameService boardGameService;
 
