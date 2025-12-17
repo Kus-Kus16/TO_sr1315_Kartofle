@@ -53,7 +53,7 @@ public class GameSessionService {
             throw new IllegalArgumentException("Cannot join owned gameSession");
         }
 
-        if (gameSession.getBoardGame().getMaxPlayers() == gameSession.getParticipants().size()) {
+        if (gameSession.getNumberOfPlayers() == gameSession.getParticipants().size()) {
             throw new IllegalArgumentException("GameSession is full");
         }
 
@@ -103,6 +103,7 @@ public class GameSessionService {
                 owner
         );
 
+        gameSession.getParticipants().add(owner);
         gameSessionRepository.save(gameSession);
         return gameSession;
     }
