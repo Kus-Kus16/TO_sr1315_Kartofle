@@ -29,11 +29,13 @@ export default function GameSessionInsight() {
     }, [id]);
 
     const handleJoinSession = async () => {
-        try {
-            const formData = { username: auth?.username };
+        if (gameSession && gameSession.participants.length >= gameSession.numberOfPlayers) {
+            alert("Session is full");
+            return;
+        }
 
-            console.log(formData);
-            
+        try {
+            const formData = { username: auth?.username };            
 
             const response = await fetch(`http://localhost:8080/sessions/${id}/join`, {
                 method: 'POST',
@@ -58,7 +60,7 @@ export default function GameSessionInsight() {
                 <p>Players: {gameSession.boardGame.minPlayers} - {gameSession.boardGame.maxPlayers}</p>
                 <p>Date: {new Date(gameSession.date).toLocaleDateString()}</p>
                 <p>Time: {gameSession.boardGame.minutesPlaytime} minutes</p>
-                <p>Description: {gameSession.boardGame.description}</p>
+                <p>Description: {gameSession.description}</p>
                 <p>Owner: {gameSession.owner.username}</p>
                 <p>Participants: {gameSession.participants.length}/{gameSession.numberOfPlayers}</p>
                 <ul>
@@ -66,7 +68,11 @@ export default function GameSessionInsight() {
                         <li key={participant.id}>{participant.username}</li>
                     ))}
                 </ul>
-                <button onClick={handleJoinSession}>Join</button>
+                {gameSession.participants.some(p => p.username === auth?.username) ? (
+                    <p>Session Joined</p>
+                ) : (
+                    <button onClick={handleJoinSession}>Join</button>
+                )}
             </div>
             }
         </div>
