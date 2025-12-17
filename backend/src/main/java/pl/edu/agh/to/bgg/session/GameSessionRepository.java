@@ -10,7 +10,13 @@ import java.util.Optional;
 
 @Repository
 public interface GameSessionRepository extends JpaRepository<GameSession, Integer> {
-    List<GameSession> findByOwner_Username(String username);
+    @Query("SELECT DISTINCT s FROM GameSession s " +
+            "JOIN s.participants p " +
+            "JOIN FETCH s.owner " +
+            "JOIN FETCH s.boardGame " +
+            "WHERE p.username = :username")
+    List<GameSession> findAllByParticipantUsername(@Param("username") String username);
+
 
     @Query("SELECT s FROM GameSession s " +
             "LEFT JOIN FETCH s.participants " +

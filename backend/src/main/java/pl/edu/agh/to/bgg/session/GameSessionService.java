@@ -36,7 +36,7 @@ public class GameSessionService {
     }
 
     public List<GameSession> getUserSessions(String username) {
-        return gameSessionRepository.findByOwner_Username(username);
+        return gameSessionRepository.findAllByParticipantUsername(username);
     }
 
     @Transactional
