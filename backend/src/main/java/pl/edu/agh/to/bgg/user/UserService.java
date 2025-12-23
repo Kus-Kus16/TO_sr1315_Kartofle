@@ -11,11 +11,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User addUser(String username) throws IllegalArgumentException, UsernameAlreadyExistsException {
-        if (username == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Username is null or empty");
-        }
-
+    public User addUser(String username) throws UsernameAlreadyExistsException {
         try {
             User user = new User(username);
             return userRepository.save(user);

@@ -1,5 +1,6 @@
 package pl.edu.agh.to.bgg.session;
 
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,17 +8,16 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public record GameSessionCreateDTO(
-        @NotNull
-        @Min(1)
+        @NotNull(message = "boardGameId must not be null")
         int boardGameId,
 
-        @NotBlank
+        @NotBlank(message = "ownerUsername must not be blank")
         String ownerUsername,
 
+        @FutureOrPresent(message = "Session date cannot be in the past")
         LocalDate date,
 
-        @NotNull
-        @Min(1)
+        @Min(value = 1, message = "numberOfPlayers must be at least 1")
         int numberOfPlayers,
 
         String description){

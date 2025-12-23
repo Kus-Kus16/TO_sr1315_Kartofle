@@ -72,11 +72,7 @@ public class GameSessionService {
     }
 
     @Transactional
-    public GameSession addSession(@Valid GameSessionCreateDTO dto) throws BoardGameNotFoundException, UserNotFoundException {
-        if (dto.date().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Cannot create gameSession in the past");
-        }
-
+    public GameSession addSession(GameSessionCreateDTO dto) throws BoardGameNotFoundException, UserNotFoundException {
         BoardGame boardGame = boardGameRepository
                 .findById(dto.boardGameId())
                 .orElseThrow(BoardGameNotFoundException::new);

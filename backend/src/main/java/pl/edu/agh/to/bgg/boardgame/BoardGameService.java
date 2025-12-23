@@ -25,10 +25,6 @@ public class BoardGameService {
 
     @Transactional
     public BoardGame addBoardGame(BoardGameCreateDTO dto) throws IllegalArgumentException {
-        if (dto.maxPlayers() < dto.minPlayers()) {
-            throw new IllegalArgumentException("Max players must be greater than min players");
-        }
-
         BoardGame boardGame = new BoardGame(
                 dto.title(),
                 dto.description(),
