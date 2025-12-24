@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import type { GameSessionType } from "../../types/gamesession";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../auth/AuthContext";
 
 export default function GameSessionInsight() {
 

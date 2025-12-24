@@ -71,5 +71,16 @@ public class DatabaseCreator {
         boardGameRepository.saveAll(List.of(bg1, bg2));
         userRepository.saveAll(List.of(u1, u2, u3));
         gameSessionRepository.saveAll(List.of(s1, s2));
+
+        for (int i = 0; i < 12; i++) {
+            BoardGame bg = new BoardGame(
+                    "Lorem",
+                    "Ipsum",
+                    1,
+                    4,
+                    90
+            );
+            boardGameRepository.save(bg);
+        }
     }
 }

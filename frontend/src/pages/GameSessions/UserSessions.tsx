@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import type { GameSessionType } from "../../types/gamesession";
 import GameSession from "./GameSessionPreview";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../auth/AuthContext";
 
 export default function GameSesions() {
 

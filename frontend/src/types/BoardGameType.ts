@@ -5,4 +5,6 @@ export interface BoardGameType {
     minPlayers: number;
     maxPlayers: number;
     minutesPlaytime: number;
+    imageUrl: string;
+    rulebookUrl?: string;
 }

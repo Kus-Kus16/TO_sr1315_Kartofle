@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState } from 'react'
-import type { BoardGameType } from '../../types/boardgame';
+import type { BoardGameType } from '../../types/BoardGameType.ts';
 
 type AddBoardGameProps = {
     onAddGame: (newGame: BoardGameType) => void;

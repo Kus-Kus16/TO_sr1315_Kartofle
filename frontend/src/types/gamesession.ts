@@ -1,4 +1,4 @@
-import type { BoardGameType } from "./boardgame";
+import type { BoardGameType } from "./BoardGameType.ts";
 import type {User} from "./user.ts";
 
 export interface GameSessionType {
