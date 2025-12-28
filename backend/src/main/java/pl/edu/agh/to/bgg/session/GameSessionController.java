@@ -57,4 +57,13 @@ public class GameSessionController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
+
+    @DeleteMapping("{id}")
+    public void deleteSession(@RequestBody @PathVariable("id") int gameSessionId) {
+        try {
+            gameSessionService.deleteGameSession(gameSessionId);
+        } catch (GameSessionNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
 }

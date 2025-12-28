@@ -108,4 +108,12 @@ public class GameSessionService {
         gameSessionRepository.save(gameSession);
         return gameSession;
     }
+
+    public void deleteGameSession(int gameSessionId) throws GameSessionNotFoundException {
+        gameSessionRepository
+                .findById(gameSessionId)
+                .orElseThrow(GameSessionNotFoundException::new);
+
+        gameSessionRepository.deleteById(gameSessionId);
+    }
 }
