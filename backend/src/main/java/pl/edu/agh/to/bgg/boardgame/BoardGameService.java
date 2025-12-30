@@ -46,13 +46,25 @@ public class BoardGameService {
         );
 
         if (dto.image() != null && !dto.image().isEmpty()) {
-            String path = imageStoragePath + "/" + dto.image().getOriginalFilename() + "_" + UUID.randomUUID();
+            String projectRoot = new File(".").getAbsolutePath();
+            projectRoot = projectRoot.substring(0, projectRoot.length() - 1);
+            File imageDir = new File(imageStoragePath);
+            if (!imageDir.exists()) imageDir.mkdirs();
+
+            String path = projectRoot + imageStoragePath + "/" + UUID.randomUUID() + "_" + dto.image().getOriginalFilename();
+            System.out.println(projectRoot);
+            System.out.println(path);
             dto.image().transferTo(new File(path));
             boardGame.setImageUrl(path);
         }
 
         if (dto.pdfInstruction() != null && !dto.pdfInstruction().isEmpty()) {
-            String path = pdfStoragePath + "/" + dto.pdfInstruction().getOriginalFilename() + "_" + UUID.randomUUID();
+            String projectRoot = new File(".").getAbsolutePath();
+            projectRoot = projectRoot.substring(0, projectRoot.length() - 1);
+            File pdfDir = new File(pdfStoragePath);
+            if (!pdfDir.exists()) pdfDir.mkdirs();
+
+            String path = projectRoot + pdfStoragePath + "/" + UUID.randomUUID() + "_" + dto.pdfInstruction().getOriginalFilename();
             dto.pdfInstruction().transferTo(new File(path));
             boardGame.setPdfUrl(path);
         }

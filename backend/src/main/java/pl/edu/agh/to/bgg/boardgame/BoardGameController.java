@@ -31,13 +31,15 @@ public class BoardGameController {
         }
     }
 
-    @PostMapping
-    public BoardGame createBoardGame(@RequestBody @Valid BoardGameCreateDTO dto) {
+    @PostMapping(consumes = "multipart/form-data")
+    public BoardGame createBoardGame(@ModelAttribute @Valid BoardGameCreateDTO dto) {
         try {
+            validateBoardGameCreate(dto);
             return boardGameService.addBoardGame(dto);
-            } catch (IllegalArgumentException | IOException e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-            }
+        } catch (IllegalArgumentException | IOException e) {
+            System.out.println(e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @DeleteMapping("{id}")
@@ -46,6 +48,37 @@ public class BoardGameController {
             boardGameService.deleteBoardGame(boardGameId);
         } catch (BoardGameNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // validation
+    private void validateBoardGameCreate(BoardGameCreateDTO dto) {
+        final long IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2 MB
+        final long PDF_MAX_SIZE = 5 * 1024 * 1024; // 2 MB
+
+        if (dto.minPlayers() > dto.maxPlayers())
+            throw new IllegalArgumentException("maxPlayers must be greater than or equal to minPlayers");
+
+        if (dto.image() != null && !dto.image().isEmpty()) {
+            String contentType = dto.image().getContentType();
+
+            if (dto.image().getSize() > IMAGE_MAX_SIZE)
+                throw new IllegalArgumentException("Image size should be no more than 2MB");
+
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new IllegalArgumentException("File must be image");
+            }
+        }
+
+        if (dto.pdfInstruction() != null && !dto.pdfInstruction().isEmpty()) {
+            String contentType = dto.pdfInstruction().getContentType();
+
+            if (dto.pdfInstruction().getSize() > PDF_MAX_SIZE)
+                throw new IllegalArgumentException("PDF size should be no more than 5MB");
+
+            if (contentType == null || !contentType.startsWith("application/pdf")) {
+                throw new IllegalArgumentException("File must be in PDF format");
+            }
         }
     }
 }

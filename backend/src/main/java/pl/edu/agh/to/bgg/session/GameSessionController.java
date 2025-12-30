@@ -8,6 +8,7 @@ import pl.edu.agh.to.bgg.boardgame.BoardGameNotFoundException;
 import pl.edu.agh.to.bgg.user.UserNotFoundException;
 import pl.edu.agh.to.bgg.user.UserRequestDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -24,7 +25,7 @@ public class GameSessionController {
         if (username != null) {
             return gameSessionService.getUserSessions(username);
         }
-        return gameSessionService.getSessions();
+        return new ArrayList<>(gameSessionService.getSessions());
     }
 
     @GetMapping("{id}")
@@ -36,7 +37,7 @@ public class GameSessionController {
         }
     }
 
-    @PutMapping("{id}")
+    @PatchMapping("{id}/join")
     public GameSession joinSession(@PathVariable("id") int sessionId, @RequestBody @Valid UserRequestDTO userDTO) {
         try {
             return gameSessionService.joinSession(sessionId, userDTO.username());
@@ -65,5 +66,22 @@ public class GameSessionController {
         } catch (GameSessionNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @PatchMapping("{id}/vote")
+    public void voteInSession(
+            @PathVariable("id") int sessionId,
+            @RequestBody @Valid VoteRequestDTO voteDTO)
+    {
+        try {
+            gameSessionService.voteForGame(voteDTO.username(), sessionId, voteDTO.boardGameId(), voteDTO.userWantsGame(), voteDTO.userKnowsGame());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @GetMapping("{id}/voting")
+    public List<Voting> getSessionVoting(@PathVariable("id") int sessionId) {
+        return gameSessionService.getSessionVoting(sessionId);
     }
 }

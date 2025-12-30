@@ -10,8 +10,9 @@ import pl.edu.agh.to.bgg.user.UserNotFoundException;
 import pl.edu.agh.to.bgg.user.UserRepository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class GameSessionService {
@@ -25,13 +26,13 @@ public class GameSessionService {
         this.boardGameRepository = boardGameRepository;
     }
 
-    public List<GameSession> getSessions() {
-        return gameSessionRepository.findAll();
+    public Set<GameSession> getSessions() {
+        return gameSessionRepository.findAllWithDetails();
     }
 
     public GameSession getSession(int id) throws GameSessionNotFoundException {
         return gameSessionRepository
-                .findById(id)
+                .findByIdWithDetails(id)
                 .orElseThrow(GameSessionNotFoundException::new);
     }
 
@@ -47,10 +48,9 @@ public class GameSessionService {
                 .findByIdWithDetails(sessionId)
                 .orElseThrow(GameSessionNotFoundException::new);
 
-        if (gameSession.getDate().isAfter(LocalDate.now())) {
+        if (gameSession.getDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("GameSession has already taken place");
         }
-
 
         User owner = gameSession.getOwner();
 
@@ -79,7 +79,7 @@ public class GameSessionService {
     public GameSession addSession(GameSessionCreateDTO dto) throws BoardGameNotFoundException, UserNotFoundException {
         if (dto.boardGameIds().isEmpty()) throw new IllegalArgumentException("Session must contain at least one board game");
 
-        List<BoardGame> boardGames = new ArrayList<>();
+        Set<BoardGame> boardGames = new HashSet<>();
 
         for (Integer boardGameId : dto.boardGameIds()) {
             BoardGame boardGame = boardGameRepository
@@ -122,5 +122,31 @@ public class GameSessionService {
                 .orElseThrow(GameSessionNotFoundException::new);
 
         gameSessionRepository.deleteById(gameSessionId);
+    }
+
+    @Transactional
+    public void voteForGame(String username, int sessionId, int boardGameId, boolean userWantsGame, boolean userKnowsGame) {
+        if (username == null || username.isEmpty()) throw new IllegalArgumentException("Username cannot be empty");
+
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(IllegalArgumentException::new);
+
+        GameSession gameSession = gameSessionRepository
+                .findById(sessionId)
+                .orElseThrow(IllegalArgumentException::new);
+
+        BoardGame boardGame = boardGameRepository
+                .findById(boardGameId)
+                .orElseThrow(IllegalArgumentException::new);
+
+        Voting vote = new Voting(user,gameSession,boardGame,userWantsGame,userKnowsGame);
+
+        gameSession.getVoting().add(vote);
+    }
+
+    public List<Voting> getSessionVoting(int sessionId) {
+        return gameSessionRepository
+                .findVotingForSession(sessionId);
     }
 }

@@ -1,12 +1,15 @@
 package pl.edu.agh.to.bgg.session;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import pl.edu.agh.to.bgg.boardgame.BoardGame;
 import pl.edu.agh.to.bgg.user.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = GameSession.TABLE_NAME)
@@ -18,8 +21,9 @@ public class GameSession {
         public static final String DATE = "date";
         public static final String NUMBER_OF_PLAYERS = "number_of_players";
         public static final String DESCRIPTION = "description";
-        public static final String BOARD_GAME_IDS = "board_game_ids";
         public static final String OWNER_ID = "owner_id";
+        public static final String VOTING_ENDED = "voting_ended";
+        public static final String BOARD_GAME_SELECTED = "selected_game";
     }
 
     public static final String PARTICIPANTS_TABLE_NAME = "participants";
@@ -63,7 +67,7 @@ public class GameSession {
                     nullable = false
             )
     )
-    private List<BoardGame> boardGames;
+    private Set<BoardGame> boardGames = new HashSet<>();
 
     @ManyToOne(optional = false)
     @JoinColumn(name = Columns.OWNER_ID, nullable = false)
@@ -81,15 +85,27 @@ public class GameSession {
                     nullable = false
             )
     )
-    private final List<User> participants = new ArrayList<>();
+    private final Set<User> participants = new HashSet<>();
 
-    public GameSession(String title, LocalDate date, int numberOfPlayers, String description, List<BoardGame> boardGames, User owner) {
+    @Column(name = Columns.VOTING_ENDED)
+    private boolean votingEnded;
+
+    @ManyToOne
+    @JoinColumn(name = Columns.BOARD_GAME_SELECTED)
+    private BoardGame boardGameSelected;
+
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<Voting> voting = new ArrayList<>();
+
+    public GameSession(String title, LocalDate date, int numberOfPlayers, String description, Set<BoardGame> boardGames, User owner) {
         this.title = title;
         this.date = date;
         this.numberOfPlayers = numberOfPlayers;
         this.description = description;
         this.boardGames = boardGames;
         this.owner = owner;
+        votingEnded = false;
+        boardGameSelected = null;
     }
 
     public GameSession() {
@@ -104,7 +120,7 @@ public class GameSession {
         return title;
     }
 
-    public List<BoardGame> getBoardGames() {
+    public Set<BoardGame> getBoardGames() {
         return boardGames;
     }
 
@@ -124,7 +140,20 @@ public class GameSession {
         return owner;
     }
 
-    public List<User> getParticipants() {
+    public Set<User> getParticipants() {
         return participants;
+    }
+
+    public boolean isVotingEnded() {
+        return votingEnded;
+    }
+
+    public void endVotingAndSelectBoardGame(BoardGame boardGame) {
+        votingEnded = true;
+        boardGameSelected = boardGame;
+    }
+
+    public List<Voting> getVoting() {
+        return voting;
     }
 }

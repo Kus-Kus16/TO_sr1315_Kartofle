@@ -510,3 +510,6 @@ fabric.properties
 
 ## env variables
 .env
+
+## database images and pdf files
+backend/uploads

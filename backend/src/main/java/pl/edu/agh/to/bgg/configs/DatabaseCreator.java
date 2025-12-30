@@ -12,6 +12,7 @@ import pl.edu.agh.to.bgg.user.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @Profile("dev")
@@ -53,7 +54,7 @@ public class DatabaseCreator {
                 LocalDate.now().plusDays(1),
                 4,
                 "Niepowtarzalna okazja",
-                List.of(bg1,bg2),
+                Set.of(bg1,bg2),
                 u1
         );
         s1.getParticipants().add(u1);
@@ -65,7 +66,7 @@ public class DatabaseCreator {
                 LocalDate.now().plusWeeks(1),
                 2,
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse sit amet mi est. Nunc tristique faucibus sapien, eleifend mattis augue euismod nec. Etiam accumsan et purus id fermentum. Fusce pellentesque nibh at orci lacinia semper. Cras nec risus ut lacus tempus ullamcorper. Nulla consequat odio eget neque interdum iaculis. Duis nisi diam, condimentum in lacus nec, condimentum sodales risus. Donec iaculis odio eu orci bibendum, eu luctus justo blandit.",
-                List.of(bg2),
+                Set.of(bg2),
                 u2
         );
         s2.getParticipants().add(u2);
@@ -75,7 +76,7 @@ public class DatabaseCreator {
                 LocalDate.now().minusMonths(1),
                 2,
                 "Bardzo stara",
-                List.of(bg2),
+                Set.of(bg2),
                 u2
         );
         s3.getParticipants().add(u2);
@@ -85,7 +86,7 @@ public class DatabaseCreator {
                 LocalDate.now().plusWeeks(1),
                 1,
                 "Solowa rozgrywka",
-                List.of(bg2),
+                Set.of(bg2),
                 u3
         );
         s4.getParticipants().add(u3);
