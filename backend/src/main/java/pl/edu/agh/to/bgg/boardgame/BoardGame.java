@@ -94,4 +94,24 @@ public class BoardGame {
     public void setPdfUrl(String pdfUrl) {
         this.pdfUrl = pdfUrl;
     }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setMinPlayers(int minPlayers) {
+        this.minPlayers = minPlayers;
+    }
+
+    public void setMaxPlayers(int maxPlayers) {
+        this.maxPlayers = maxPlayers;
+    }
+
+    public void setMinutesPlaytime(int minutesPlaytime) {
+        this.minutesPlaytime = minutesPlaytime;
+    }
 }

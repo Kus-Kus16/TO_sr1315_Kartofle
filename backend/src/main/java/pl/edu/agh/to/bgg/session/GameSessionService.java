@@ -80,7 +80,7 @@ public class GameSessionService {
         if (dto.boardGameIds().isEmpty()) throw new IllegalArgumentException("Session must contain at least one board game");
 
         Set<BoardGame> boardGames = new HashSet<>();
-
+        
         for (Integer boardGameId : dto.boardGameIds()) {
             BoardGame boardGame = boardGameRepository
                     .findById(boardGameId)
