@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pl.edu.agh.to.bgg.boardgame.BoardGameNotFoundException;
 import pl.edu.agh.to.bgg.user.UserNotFoundException;
-import pl.edu.agh.to.bgg.user.UserRequestDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +37,9 @@ public class GameSessionController {
     }
 
     @PatchMapping("{id}/participants")
-    public GameSession addParticipantToSession(@PathVariable("id") int sessionId, @RequestBody @Valid UserRequestDTO userDTO) {
+    public GameSession addParticipantToSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
         try {
-            return gameSessionService.joinSession(sessionId, userDTO.username());
+            return gameSessionService.joinSession(sessionId, username);
         } catch (GameSessionNotFoundException | UserNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         } catch (IllegalArgumentException e) {
