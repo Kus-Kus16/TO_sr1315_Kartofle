@@ -45,6 +45,12 @@ public class GameSessionController {
     }
 
 
+    @DeleteMapping("{id}/participants")
+    public void deleteParticipantFromSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
+        gameSessionService.leaveSession(sessionId, username);
+    }
+
+
     @PostMapping
     public GameSession createSession(@RequestBody @Valid GameSessionCreateDTO dto) {
         return gameSessionService.addSession(dto);

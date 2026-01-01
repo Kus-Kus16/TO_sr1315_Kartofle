@@ -42,8 +42,7 @@ public class GameSessionService {
     }
 
     @Transactional
-    public GameSession joinSession(int sessionId, String username)
-            throws GameSessionNotFoundException, UserNotFoundException {
+    public GameSession joinSession(int sessionId, String username) {
 
         GameSession gameSession = gameSessionRepository
                 .findByIdWithDetails(sessionId)
@@ -75,6 +74,28 @@ public class GameSessionService {
 
         return gameSession;
     }
+
+
+    @Transactional
+    public void leaveSession(int gameSessionId, String username) {
+
+        GameSession gameSession = gameSessionRepository
+                .findById(gameSessionId)
+                .orElseThrow(GameSessionNotFoundException::new);
+
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+
+        if (gameSession.getOwner().equals(user))
+            throw new IllegalStateException("Session owner cannot leave session :)");
+
+        gameSession.getParticipants().remove(user);
+
+        gameSession.getVoting()
+                .removeIf(vote -> vote.getSessionParticipant().equals(user));
+    }
+
 
     @Transactional
     public GameSession addSession(GameSessionCreateDTO dto) {
