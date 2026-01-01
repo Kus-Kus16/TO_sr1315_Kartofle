@@ -17,6 +17,6 @@ public record BoardGameUpdateDTO(
         MultipartFile image,
 
         @Nullable
-        MultipartFile pdfInstruction
+        MultipartFile pdfRuleBook
 ) {
 }

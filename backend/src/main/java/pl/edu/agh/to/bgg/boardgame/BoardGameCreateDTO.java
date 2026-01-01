@@ -1,11 +1,7 @@
 package pl.edu.agh.to.bgg.boardgame;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
@@ -29,6 +25,6 @@ public record BoardGameCreateDTO(
         MultipartFile image,
 
         @Nullable
-        MultipartFile pdfInstruction
+        MultipartFile pdfRulebook
 ) {
 }

@@ -30,43 +30,23 @@ public class GameSessionController {
 
     @GetMapping("{id}")
     public GameSession getSession(@PathVariable("id") int sessionId) {
-        try {
-            return gameSessionService.getSession(sessionId);
-        } catch (GameSessionNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        return gameSessionService.getSession(sessionId);
     }
 
     @PatchMapping("{id}/participants")
     public GameSession addParticipantToSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
-        try {
-            return gameSessionService.joinSession(sessionId, username);
-        } catch (GameSessionNotFoundException | UserNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return gameSessionService.joinSession(sessionId, username);
     }
 
     @PostMapping
     public GameSession createSession(@RequestBody @Valid GameSessionCreateDTO dto) {
-        try {
-            return gameSessionService.addSession(dto);
-        } catch (BoardGameNotFoundException | UserNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return gameSessionService.addSession(dto);
     }
 
     @DeleteMapping("{id}")
     public void deleteSession(@PathVariable("id") int gameSessionId,
                               @RequestParam String username) {
-        try {
-            gameSessionService.deleteGameSession(gameSessionId, username);
-        } catch (GameSessionNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        gameSessionService.deleteGameSession(gameSessionId, username);
     }
 
     @PostMapping("{id}/voting")

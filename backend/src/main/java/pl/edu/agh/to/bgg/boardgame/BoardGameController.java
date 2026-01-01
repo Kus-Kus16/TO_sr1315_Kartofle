@@ -29,21 +29,13 @@ public class BoardGameController {
 
     @GetMapping("{id}")
     public BoardGame getBoardGame(@PathVariable("id") int boardGameId) {
-        try {
-            return boardGameService.getBoardGame(boardGameId);
-        } catch (BoardGameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        return boardGameService.getBoardGame(boardGameId);
     }
 
     @PostMapping(consumes = "multipart/form-data")
     public BoardGame createBoardGame(@ModelAttribute @Valid BoardGameCreateDTO dto) {
-        try {
-            validateBoardGameCreate(dto);
-            return boardGameService.addBoardGame(dto);
-        } catch (IllegalArgumentException | IOException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        validateBoardGameCreate(dto);
+        return boardGameService.addBoardGame(dto);
     }
 
     @PatchMapping(value = "{id}", consumes = "multipart/form-data")
@@ -51,27 +43,15 @@ public class BoardGameController {
             @PathVariable int id,
             @ModelAttribute @Valid BoardGameUpdateDTO dto
     ) {
-        try {
-            validateBoardGameUpdate(dto);
-            try {
-                return boardGameService.updateBoardGame(id, dto);
-            } catch (BoardGameNotFoundException e) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-            }
-        } catch (IllegalArgumentException | IOException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        validateBoardGameUpdate(dto);
+        return boardGameService.updateBoardGame(id, dto);
     }
 
 
 
     @DeleteMapping("{id}")
     public void deleteBoardGame(@PathVariable("id") int boardGameId) {
-        try {
-            boardGameService.deleteBoardGame(boardGameId);
-        } catch (BoardGameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        boardGameService.deleteBoardGame(boardGameId);
     }
 
     // validation
@@ -80,12 +60,12 @@ public class BoardGameController {
             throw new IllegalArgumentException("maxPlayers must be greater than or equal to minPlayers");
 
         validateImage(dto.image());
-        validatePdfFile(dto.pdfInstruction());
+        validatePdfFile(dto.pdfRulebook());
     }
 
     private void validateBoardGameUpdate(BoardGameUpdateDTO dto) {
         validateImage(dto.image());
-        validatePdfFile(dto.pdfInstruction());
+        validatePdfFile(dto.pdfRuleBook());
     }
 
     private void validateImage(MultipartFile image) {

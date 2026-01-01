@@ -8,6 +8,8 @@ import pl.edu.agh.to.bgg.exception.BoardGameNotFoundException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,14 +32,15 @@ public class BoardGameService {
         return boardGameRepository.findAll();
     }
 
-    public BoardGame getBoardGame(int id) throws BoardGameNotFoundException {
+    public BoardGame getBoardGame(int id) {
         return boardGameRepository
                 .findById(id)
                 .orElseThrow(BoardGameNotFoundException::new);
     }
 
+
     @Transactional
-    public BoardGame addBoardGame(BoardGameCreateDTO dto) throws IllegalArgumentException, IOException {
+    public BoardGame addBoardGame(BoardGameCreateDTO dto) {
 
         BoardGame boardGame = new BoardGame(
                 dto.title(),
@@ -52,17 +55,17 @@ public class BoardGameService {
             boardGame.setImageUrl(path);
         }
 
-        if (dto.pdfInstruction() != null && !dto.pdfInstruction().isEmpty()) {
-            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.pdfInstruction());
+        if (dto.pdfRulebook() != null && !dto.pdfRulebook().isEmpty()) {
+            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.pdfRulebook());
             boardGame.setPdfUrl(path);
         }
 
         return boardGameRepository.save(boardGame);
     }
 
+
     @Transactional
-    public BoardGame updateBoardGame(int id, BoardGameUpdateDTO dto)
-            throws BoardGameNotFoundException, IOException {
+    public BoardGame updateBoardGame(int id, BoardGameUpdateDTO dto) {
 
         BoardGame boardGame = boardGameRepository
                 .findById(id)
@@ -76,16 +79,17 @@ public class BoardGameService {
             boardGame.setMinutesPlaytime(dto.minutesPlaytime());
         }
 
+        // update image file
         deleteFileIfExists(boardGame.getImageUrl());
         if (dto.image() != null && !dto.image().isEmpty()) {
             String path = addImageOrPdfFileToDatabaseAndGetPath(dto.image());
             boardGame.setImageUrl(path);
         }
 
-
+        // update pdf file
         deleteFileIfExists(boardGame.getPdfUrl());
-        if (dto.pdfInstruction() != null && !dto.pdfInstruction().isEmpty()) {
-            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.pdfInstruction());
+        if (dto.pdfRuleBook() != null && !dto.pdfRuleBook().isEmpty()) {
+            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.pdfRuleBook());
             boardGame.setPdfUrl(path);
         }
 
@@ -94,7 +98,7 @@ public class BoardGameService {
 
 
     @Transactional
-    public void deleteBoardGame(int boardGameId) throws BoardGameNotFoundException {
+    public void deleteBoardGame(int boardGameId) {
         boardGameRepository
                 .findById(boardGameId)
                 .orElseThrow(BoardGameNotFoundException::new);
@@ -102,27 +106,32 @@ public class BoardGameService {
         boardGameRepository.deleteById(boardGameId);
     }
 
-    private String addImageOrPdfFileToDatabaseAndGetPath(MultipartFile file) throws IllegalArgumentException, IOException {
+    private String addImageOrPdfFileToDatabaseAndGetPath(MultipartFile file) {
         String contentType = file.getContentType();
-        String storagePath;
-        if (contentType == null) throw new IllegalArgumentException("Content type is null");
-        if (contentType.startsWith("image/")){
-            storagePath = imageStoragePath;
+        if (contentType == null) throw new IllegalArgumentException("File content type is null");
+
+        // get file storage path
+        String storageDirPath;
+        if (contentType.startsWith("image/")) {
+            storageDirPath = imageStoragePath;
+        } else if (contentType.startsWith("application/pdf")) {
+            storageDirPath = pdfStoragePath;
+        } else throw new IllegalArgumentException("File should be image or pdf");
+
+        try {
+            Path projectRoot = Path.of("").toAbsolutePath();
+            Path targetDir = projectRoot.resolve(storageDirPath);
+            Files.createDirectories(targetDir);
+
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path filePath = targetDir.resolve(fileName);
+
+            file.transferTo(filePath);
+
+            return filePath.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save file", e);
         }
-        else if (contentType.startsWith("application/pdf")) {
-            storagePath = pdfStoragePath;
-        }
-        else throw new IllegalArgumentException("File should be image or pdf");
-
-        String projectRoot = new File(".").getAbsolutePath();
-        projectRoot = projectRoot.substring(0, projectRoot.length() - 1);
-        File imageDir = new File(storagePath);
-        if (!imageDir.exists()) imageDir.mkdirs();
-
-        String path = projectRoot + storagePath + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
-        file.transferTo(new File(path));
-
-        return path;
     }
 
     private void deleteFileIfExists(String path) {

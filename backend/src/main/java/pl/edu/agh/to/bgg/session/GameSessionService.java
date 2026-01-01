@@ -31,7 +31,7 @@ public class GameSessionService {
         return gameSessionRepository.findAllWithDetails();
     }
 
-    public GameSession getSession(int id) throws GameSessionNotFoundException {
+    public GameSession getSession(int id) {
         return gameSessionRepository
                 .findByIdWithDetails(id)
                 .orElseThrow(GameSessionNotFoundException::new);
@@ -77,7 +77,7 @@ public class GameSessionService {
     }
 
     @Transactional
-    public GameSession addSession(GameSessionCreateDTO dto) throws BoardGameNotFoundException, UserNotFoundException {
+    public GameSession addSession(GameSessionCreateDTO dto) {
         if (dto.boardGameIds().isEmpty()) throw new IllegalArgumentException("Session must contain at least one board game");
 
         Set<BoardGame> boardGames = new HashSet<>();
@@ -117,7 +117,7 @@ public class GameSessionService {
         return gameSession;
     }
 
-    public void deleteGameSession(int gameSessionId, String username) throws GameSessionNotFoundException {
+    public void deleteGameSession(int gameSessionId, String username) {
         GameSession session = gameSessionRepository
                 .findById(gameSessionId)
                 .orElseThrow(GameSessionNotFoundException::new);
