@@ -8,7 +8,6 @@ import pl.edu.agh.to.bgg.boardgame.BoardGameRepository;
 import pl.edu.agh.to.bgg.user.User;
 import pl.edu.agh.to.bgg.user.UserRepository;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -170,10 +169,6 @@ public class GameSessionService {
                 .findById(voteId)
                 .orElseThrow(VoteNotFoundException::new);
 
-        User user = userRepository
-                .findByUsername(username)
-                .orElseThrow(UserNotFoundException::new);
-
         GameSession gameSession = vote.getSession();
 
         if (!vote.getSessionParticipant().getUsername().equals(username))
@@ -211,7 +206,10 @@ public class GameSessionService {
     }
 
     public List<Voting> getSessionVoting(int sessionId) {
-        return gameSessionRepository
-                .findVotingForSession(sessionId);
-    }
+
+        GameSession gameSession = gameSessionRepository
+                .findById(sessionId)
+                .orElseThrow(GameSessionNotFoundException::new);
+
+        return gameSession.getVoting();}
 }
