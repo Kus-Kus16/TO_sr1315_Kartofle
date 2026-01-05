@@ -9,12 +9,13 @@ import {
     Button,
     Stack,
     Alert,
-    Chip, type AlertColor
+    Chip
 } from "@mui/material";
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImageNotSupported, PictureAsPdf, Photo } from '@mui/icons-material';
 import type { BoardGameTypeFull } from "../types/BoardGameType.ts";
+import {baseURL} from "../api/axios.tsx";
 
 export interface BoardGameFormData {
     title: string;
@@ -32,11 +33,9 @@ export interface BoardGameFormData {
 
 export interface BoardGameFormProps {
     initialData?: BoardGameTypeFull;
-    initialWarning?: string;
     onSubmit: (
         formData: BoardGameFormData,
-        setError: (msg: string) => void,
-        setSeverity: (msg: AlertColor) => void
+        setError: (msg: string) => void
     ) => void;
     formTitle: string;
     disableEdit: boolean;
@@ -63,8 +62,7 @@ export default function BoardGameForm(props: BoardGameFormProps) {
         existingRulebookUrl: props.initialData?.rulebookUrl
     });
 
-    const [error, setError] = useState(props.initialWarning || "");
-    const [errorSeverity, setErrorSeverity] = useState<AlertColor>("warning");
+    const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState<{
         title?: string;
         minPlayers?: string;
@@ -72,7 +70,11 @@ export default function BoardGameForm(props: BoardGameFormProps) {
         minutesPlaytime?: string;
     }>({});
 
-    const [imagePreview, setImagePreview] = useState<string>(props.initialData?.imageUrl || "");
+    const [imagePreview, setImagePreview] = useState<string>(
+        props.initialData?.imageUrl
+            ? `${baseURL}${props.initialData.imageUrl}`
+            : ""
+    );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -90,14 +92,12 @@ export default function BoardGameForm(props: BoardGameFormProps) {
         if (!file) return;
 
         if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-            setErrorSeverity("error");
             setError("Niedozwolone rozszerzenie pliku: " + file.type);
             e.target.value = '';
             return;
         }
 
         if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-            setErrorSeverity("error");
             setError(`Plik nie może być większy niż ${MAX_IMAGE_SIZE_MB} MB`);
             e.target.value = '';
             return;
@@ -112,14 +112,12 @@ export default function BoardGameForm(props: BoardGameFormProps) {
         if (!file) return;
 
         if (file.type !== 'application/pdf') {
-            setErrorSeverity("error");
             setError("Niedozwolone rozszerzenie pliku: " + file.type);
             e.target.value = '';
             return;
         }
 
         if (file.size > MAX_PDF_SIZE_MB * 1024 * 1024) {
-            setErrorSeverity("error");
             setError(`Plik nie może być większy niż ${MAX_PDF_SIZE_MB} MB`);
             e.target.value = '';
             return;
@@ -162,7 +160,7 @@ export default function BoardGameForm(props: BoardGameFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validateFields()) {
-            props.onSubmit(form, setError, setErrorSeverity);
+            props.onSubmit(form, setError);
         }
     };
 
@@ -200,7 +198,7 @@ export default function BoardGameForm(props: BoardGameFormProps) {
                             {props.formTitle}
                         </Typography>
 
-                        {error && <Alert severity={errorSeverity}>{error}</Alert>}
+                        {error && <Alert severity="error">{error}</Alert>}
 
                         <TextField
                             label="Tytuł"
@@ -322,8 +320,12 @@ export default function BoardGameForm(props: BoardGameFormProps) {
                                 icon={<PictureAsPdf />}
                                 label={form.rulebookFile?.name || "Aktualna instrukcja"}
                                 component={"a"}
-                                href={form.existingRulebookUrl}
-                                onDelete={removeExistingRulebook}
+                                href={`${baseURL}${form.existingRulebookUrl}`}
+                                onDelete={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    removeExistingRulebook();
+                                }}
                                 color="secondary"
                                 variant="outlined"
                             />

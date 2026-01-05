@@ -2,7 +2,7 @@ import {useContext, useEffect, useState} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography, Card, CardMedia, CardContent, CardActions, Button, CircularProgress, Alert, Stack, Tooltip } from "@mui/material";
 import type {BoardGameTypeFull} from "../../types/BoardGameType.ts";
-import api from "../../api/axios";
+import api, {baseURL} from "../../api/axios";
 import {Link as RouterLink} from "react-router";
 import {AuthContext} from "../../auth/AuthContext.tsx";
 import {ImageNotSupported} from "@mui/icons-material";
@@ -16,7 +16,6 @@ export default function BoardGameDetails() {
     const [boardGame, setBoardGame] = useState<BoardGameTypeFull | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [imagePreview] = useState<string>("");
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
     const handleDelete = async () => {
@@ -52,7 +51,7 @@ export default function BoardGameDetails() {
     }
 
     return (
-        <Box sx={{ p: 3, margin: 'auto' }}>
+        <Box sx={{ p: 3, px: 10, margin: 'auto' }}>
             {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
                     <CircularProgress />
@@ -62,12 +61,12 @@ export default function BoardGameDetails() {
             {boardGame && (
                 <>
                 <Card>
-                    {imagePreview ? (
+                    {boardGame.imageUrl ? (
                         <CardMedia
                             component="img"
                             height="300"
-                            image={imagePreview}
-                            alt="Podgląd obrazka"
+                            image={`${baseURL}${boardGame.imageUrl}`}
+                            alt={boardGame.title}
                         />
                     ) : (
                         <Box
@@ -143,7 +142,7 @@ export default function BoardGameDetails() {
                                     <Button
                                         size="medium"
                                         color="info"
-                                        href={boardGame.rulebookUrl}
+                                        href={`${baseURL}${boardGame.rulebookUrl}`}
                                     >
                                         Instrukcja
                                     </Button>

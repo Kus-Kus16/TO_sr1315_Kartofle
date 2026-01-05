@@ -1,28 +1,27 @@
-package pl.edu.agh.to.bgg.session;
+package pl.edu.agh.to.bgg.vote;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import pl.edu.agh.to.bgg.boardgame.BoardGame;
+import pl.edu.agh.to.bgg.session.GameSession;
 import pl.edu.agh.to.bgg.user.User;
 
 @Entity
-@Table(name = Voting.TABLE_NAME)
-public class Voting {
-
-    public static final String TABLE_NAME = "voting";
+@Table(name = Vote.TABLE_NAME)
+public class Vote {
+    public static final String TABLE_NAME = "votes";
     public static class Columns {
         public static final String ID = "id";
         public static final String SESSION = "session";
         public static final String SESSION_PARTICIPANT = "session_participant";
         public static final String BOARD_GAME = "board_game";
-        public static final String USER_WANT_GAME = "user_want_game";
-        public static final String USER_KNOW_GAME = "user_know_game";
+        public static final String LIKES = "likes";
+        public static final String KNOWS = "knows";
     }
 
     @Id
     @GeneratedValue
     @Column(name = Columns.ID)
-    private Long id;
+    private int id;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = Columns.SESSION_PARTICIPANT, nullable = false)
@@ -30,30 +29,27 @@ public class Voting {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = Columns.SESSION, nullable = false)
-    @JsonIgnore
     private GameSession session;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = Columns.BOARD_GAME, nullable = false)
     private BoardGame boardGame;
 
-    @Column(name = Columns.USER_WANT_GAME)
-    private boolean userWantsGame;
+    @Column(name = Columns.LIKES)
+    private boolean likes;
 
-    @Column(name = Columns.USER_KNOW_GAME)
-    private boolean userKnowsGame;
+    @Column(name = Columns.KNOWS)
+    private boolean knows;
 
-    public Voting() {}
+    public Vote() {}
 
-    public Voting(User sessionParticipant, GameSession session, BoardGame boardGame, boolean userWantsGame, boolean userKnowsGame) {
+    public Vote(User sessionParticipant, GameSession session, BoardGame boardGame) {
         this.sessionParticipant = sessionParticipant;
         this.session = session;
         this.boardGame = boardGame;
-        this.userWantsGame = userWantsGame;
-        this.userKnowsGame = userKnowsGame;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
@@ -69,19 +65,19 @@ public class Voting {
         return boardGame;
     }
 
-    public boolean isUserWantsGame() {
-        return userWantsGame;
+    public boolean isLikes() {
+        return likes;
     }
 
-    public boolean isUserKnowsGame() {
-        return userKnowsGame;
+    public boolean isKnows() {
+        return knows;
     }
 
-    public void setUserWantsGame(boolean userWantsGame) {
-        this.userWantsGame = userWantsGame;
+    public void setLikes(boolean userWantsGame) {
+        this.likes = userWantsGame;
     }
 
-    public void setUserKnowsGame(boolean userKnowsGame) {
-        this.userKnowsGame = userKnowsGame;
+    public void setKnows(boolean userKnowsGame) {
+        this.knows = userKnowsGame;
     }
 }

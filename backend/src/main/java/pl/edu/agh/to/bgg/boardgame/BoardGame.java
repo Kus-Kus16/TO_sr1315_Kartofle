@@ -1,6 +1,9 @@
 package pl.edu.agh.to.bgg.boardgame;
 
 import jakarta.persistence.*;
+import pl.edu.agh.to.bgg.file.StoredFile;
+import pl.edu.agh.to.bgg.session.GameSession;
+import pl.edu.agh.to.bgg.user.User;
 
 import java.util.Objects;
 
@@ -15,8 +18,9 @@ public class BoardGame {
         public static final String MIN_PLAYERS = "min_players";
         public static final String MAX_PLAYERS = "max_players";
         public static final String MINUTES_PLAYTIME = "minutes_playtime";
-        public static final String IMAGE_URL = "image_url";
-        public static final String PDF_URL = "pdf_url";
+        public static final String DISCONTINUED = "discontinued";
+        public static final String IMAGE_FILE_ID = "image_file_id";
+        public static final String PDF_FILE_ID = "pdf_file_id";
     }
 
     @Id
@@ -39,11 +43,16 @@ public class BoardGame {
     @Column(name = Columns.MINUTES_PLAYTIME, nullable = false)
     private int minutesPlaytime;
 
-    @Column(name = Columns.IMAGE_URL)
-    private String imageUrl;
+    @Column(name = Columns.DISCONTINUED, nullable = false)
+    private boolean discontinued;
 
-    @Column(name = Columns.PDF_URL)
-    private String pdfUrl;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = Columns.IMAGE_FILE_ID)
+    private StoredFile imageFile;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = Columns.PDF_FILE_ID)
+    private StoredFile pdfFile;
 
     public BoardGame(String title, String description, int minPlayers, int maxPlayers, int minutesPlaytime) {
         this.title = title;
@@ -51,6 +60,7 @@ public class BoardGame {
         this.minPlayers = minPlayers;
         this.maxPlayers = maxPlayers;
         this.minutesPlaytime = minutesPlaytime;
+        this.discontinued = false;
     }
 
     public BoardGame() {
@@ -81,20 +91,24 @@ public class BoardGame {
         return minutesPlaytime;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public boolean isDiscontinued() {
+        return discontinued;
     }
 
-    public String getPdfUrl() {
-        return pdfUrl;
+    public StoredFile getImageFile() {
+        return imageFile;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageFile(StoredFile imageFile) {
+        this.imageFile = imageFile;
     }
 
-    public void setPdfUrl(String pdfUrl) {
-        this.pdfUrl = pdfUrl;
+    public StoredFile getPdfFile() {
+        return pdfFile;
+    }
+
+    public void setPdfFile(StoredFile pdfFile) {
+        this.pdfFile = pdfFile;
     }
 
     public void setTitle(String title) {
@@ -115,6 +129,10 @@ public class BoardGame {
 
     public void setMinutesPlaytime(int minutesPlaytime) {
         this.minutesPlaytime = minutesPlaytime;
+    }
+
+    public void setDiscontinued(boolean discontinued) {
+        this.discontinued = discontinued;
     }
 
     @Override

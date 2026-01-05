@@ -1,6 +1,6 @@
 import {useNavigate, useSearchParams} from "react-router-dom";
 import GameSessionForm from "../../components/GameSessionForm.tsx";
-import type { GameSessionTypeAdd } from "../../types/GameSessionType.ts";
+import type { GameSessionTypeCreate } from "../../types/GameSessionType.ts";
 import api from "../../api/axios.tsx";
 
 export default function GameSessionAdd() {
@@ -13,7 +13,7 @@ export default function GameSessionAdd() {
         : undefined;
 
     const handleAdd = async (
-        formData: GameSessionTypeAdd,
+        formData: GameSessionTypeCreate,
         setError: (msg: string) => void
     ) => {
         try {

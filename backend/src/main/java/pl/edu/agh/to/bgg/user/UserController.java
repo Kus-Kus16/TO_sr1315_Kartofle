@@ -1,10 +1,8 @@
 package pl.edu.agh.to.bgg.user;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("users")
@@ -16,12 +14,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User registerUser(@RequestHeader("X-User-Login") @NotBlank String username) {
-        return userService.addUser(username);
+    public User registerUser(@RequestBody @Valid UserLoginDTO dto) {
+        return userService.addUser(dto.username());
     }
 
     @PostMapping("login")
-    public User loginUser(@RequestHeader("X-User-Login") @NotBlank String username) {
-        return userService.getUser(username);
+    public User loginUser(@RequestBody @Valid UserLoginDTO dto) {
+        return userService.getUser(dto.username());
     }
 }

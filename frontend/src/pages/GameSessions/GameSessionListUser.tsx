@@ -7,20 +7,21 @@ import {
     Alert,
 } from "@mui/material";
 import api from "../../api/axios"
-import type {GameSessionTypeFull} from "../../types/GameSessionType.ts";
+import type {GameSessionTypePreview} from "../../types/GameSessionType.ts";
 import GameSessionPreview from "../../components/GameSessionPreview.tsx";
 import {AuthContext} from "../../auth/AuthContext.tsx";
+import { RefreshContext } from "../../components/RefreshContext.tsx";
 
 export default function GameSessionListUser() {
     const auth = useContext(AuthContext);
-    const [sessions, setSessions] = useState<GameSessionTypeFull[]>([]);
+    const [sessions, setSessions] = useState<GameSessionTypePreview[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchGameSessions = async (username: string | null) => {
+    const fetchGameSessions = async () => {
+        const fetch = async (username: string | null) => {
             try {
-                const { data } = await api.get<GameSessionTypeFull[]>('/sessions', {
+                const { data } = await api.get<GameSessionTypePreview[]>('/sessions', {
                     params: {
                         username: username,
                     }
@@ -34,14 +35,18 @@ export default function GameSessionListUser() {
         };
 
         if (auth.isAuthenticated) {
-            fetchGameSessions(auth.username).then();
+            fetch(auth.username).then();
         } else {
             setError("Nie jesteś zalogowany");
         }
+    }
+
+    useEffect(() => {
+        fetchGameSessions().then()
     }, [auth.isAuthenticated, auth.username]);
 
     return (
-        <Box>
+        <RefreshContext.Provider value={{ refresh: fetchGameSessions }}>
             <Box sx={{p: 3}}>
                 <Typography variant="h4" gutterBottom>
                     Twoje sesje
@@ -70,6 +75,6 @@ export default function GameSessionListUser() {
                     </Box>
                 )}
             </Box>
-        </Box>
+        </RefreshContext.Provider>
     );
 }

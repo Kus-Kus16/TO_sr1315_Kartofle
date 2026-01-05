@@ -1,4 +1,4 @@
-import type { GameSessionTypeFull } from "../types/GameSessionType"
+import type {GameSessionTypePreview} from "../types/GameSessionType"
 import { useContext, useState } from "react"
 import { AuthContext } from "../auth/AuthContext"
 import {
@@ -7,28 +7,30 @@ import {
     Tooltip,
 } from "@mui/material"
 import api from "../api/axios"
-import { useNavigate } from "react-router-dom"
 import ConfirmDialog from "./ConfirmDialog.tsx";
+import {RefreshContext} from "./RefreshContext.tsx";
+import {useNavigate} from "react-router-dom";
 
 interface Props {
-    session: GameSessionTypeFull
+    session: GameSessionTypePreview
     setError: (msg: string) => void
 }
 
 export default function GameSessionActionButtons({ session, setError }: Props) {
     const auth = useContext(AuthContext)
+    const refresh = useContext(RefreshContext)
     const navigate = useNavigate()
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
 
+    const user = session.participants.find(
+        p => p.username === auth.username
+    );
+
     const isPastSession = new Date(session.date) < new Date()
-    const isParticipant = session.participants.some(
-        (u) => u.username === auth.username
-    )
+    const isParticipant = user != undefined;
     const isFull = session.participants.length >= session.numberOfPlayers
-    const isOwner = session.participants.some(
-        (u) => u.username === auth.username
-    )
+    const isOwner = session.ownerId == user?.id
 
     const isJoinDisabled =
         !auth.isAuthenticated || isPastSession || isParticipant || isFull
@@ -48,9 +50,9 @@ export default function GameSessionActionButtons({ session, setError }: Props) {
             if (isParticipant) {
                 await api.delete(`/sessions/${session.id}/participants`)
             } else {
-                await api.post(`/sessions/${session.id}/participants`)
+                await api.patch(`/sessions/${session.id}/participants`)
             }
-            navigate(`/sessions/${session.id}`)
+            refresh.refresh()
         } catch {
             setError(
                 isParticipant
@@ -63,6 +65,7 @@ export default function GameSessionActionButtons({ session, setError }: Props) {
     const handleDelete = async () => {
         try {
             await api.delete(`/sessions/${session.id}`)
+            refresh.refresh()
             navigate("/sessions")
         } catch {
             setError("Nie udało się usunąć sesji.")

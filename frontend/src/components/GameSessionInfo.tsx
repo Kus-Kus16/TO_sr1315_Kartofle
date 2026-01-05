@@ -6,8 +6,6 @@ export default function GameSessionInfo({ session }: { session: GameSessionTypeF
     const isPastSession = new Date(session.date) < new Date();
     const isFull = session.participants.length >= session.numberOfPlayers;
 
-    session.ownerId = session.owner.id; // TODO remove after api fix
-
     const hasSelectedGame = !!session.selectedBoardGameId;
 
     return (

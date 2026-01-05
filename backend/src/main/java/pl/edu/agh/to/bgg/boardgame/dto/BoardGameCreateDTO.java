@@ -1,4 +1,4 @@
-package pl.edu.agh.to.bgg.boardgame;
+package pl.edu.agh.to.bgg.boardgame.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -22,9 +22,9 @@ public record BoardGameCreateDTO(
         int minutesPlaytime,
 
         @Nullable
-        MultipartFile image,
+        MultipartFile imageFile,
 
         @Nullable
-        MultipartFile pdfRulebook
+        MultipartFile rulebookFile
 ) {
 }

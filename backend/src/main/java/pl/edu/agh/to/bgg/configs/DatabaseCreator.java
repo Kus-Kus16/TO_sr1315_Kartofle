@@ -70,6 +70,7 @@ public class DatabaseCreator {
                 u2
         );
         s2.getParticipants().add(u2);
+        s2.setSelectedBoardGame(bg2);
 
         GameSession s3 = new GameSession(
                 "Stara sesja",
@@ -80,6 +81,7 @@ public class DatabaseCreator {
                 u2
         );
         s3.getParticipants().add(u2);
+        s2.setSelectedBoardGame(bg2);
 
         GameSession s4 = new GameSession(
                 "Pełna sesja",
@@ -90,6 +92,7 @@ public class DatabaseCreator {
                 u3
         );
         s4.getParticipants().add(u3);
+        s2.setSelectedBoardGame(bg2);
 
         boardGameRepository.saveAll(List.of(bg1, bg2));
         userRepository.saveAll(List.of(u1, u2, u3));

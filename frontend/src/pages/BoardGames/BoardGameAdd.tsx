@@ -1,54 +1,41 @@
-import api from "../../api/axios.tsx";
+import apiMultipart from "../../api/axiosMultipart.tsx";
 import {useNavigate} from "react-router-dom";
 import BoardGameForm, {type BoardGameFormData} from "../../components/BoardGameForm.tsx";
-import type {AlertColor} from "@mui/material";
+import type {BoardGameTypeCreate} from "../../types/BoardGameType.ts";
 
 export default function BoardGameAdd() {
     const navigate = useNavigate();
 
     const handleAdd = async (
         formData: BoardGameFormData,
-        setError: (msg: string) => void,
-        setErrorSeverity: (msg: AlertColor) => void,
+        setError: (msg: string) => void
     ) => {
-        let id;
         try {
-            const res = await api.post("/boardgames", {
-                title: formData.title,
-                description: formData.description,
-                minPlayers: formData.minPlayers,
-                maxPlayers: formData.maxPlayers,
-                minutesPlaytime: formData.minutesPlaytime,
-            });
-            id = res.data.id
-        } catch {
-            setErrorSeverity("error");
-            setError("Nie udało się dodać gry.")
-            return;
-        }
+            const data = new FormData();
 
-        try {
-            if (formData.imageFile || formData.rulebookFile) {
-                const filesForm = new FormData();
-                if (formData.imageFile) {
-                    filesForm.append("imageFile", formData.imageFile);
-                }
-                if (formData.rulebookFile) {
-                    filesForm.append("rulebookFile", formData.rulebookFile);
-                }
+            data.append("title", formData.title);
+            data.append("description", formData.description);
+            data.append("minPlayers", formData.minPlayers.toString());
+            data.append("maxPlayers", formData.maxPlayers.toString());
+            data.append("minutesPlaytime", formData.minutesPlaytime.toString());
 
-                await api.post(`/boardgames/${id}/files`, filesForm, {
-                    headers: { "Content-Type": "multipart/form-data" },
-                });
+            if (formData.imageFile) {
+                data.append("imageFile", formData.imageFile);
             }
+            if (formData.rulebookFile) {
+                data.append("rulebookFile", formData.rulebookFile);
+            }
+
+            for (const [key, value] of data.entries()) {
+                console.log(key, value);
+            }
+            await apiMultipart.post<BoardGameTypeCreate>("/boardgames", data);
 
             navigate("/boardgames");
         } catch {
-            navigate(`/boardgames/${id}/edit`, {
-                state: { fileUploadError: true }
-            });
+            setError("Nie udało się dodać gry.");
         }
-    }
+    };
 
     return <BoardGameForm onSubmit={handleAdd} formTitle={"Dodaj nową grę"} disableEdit={false}/>
 }

@@ -4,6 +4,7 @@ import { Link as RouterLink } from "react-router-dom";
 import {useContext} from "react";
 import {AuthContext} from "../auth/AuthContext.tsx";
 import {ImageNotSupported} from "@mui/icons-material";
+import {baseURL} from "../api/axios.tsx";
 
 interface BoardGamePreviewProps {
     boardGame: BoardGameTypeFull;
@@ -21,7 +22,7 @@ export default function BoardGamePreview({ boardGame, showActions }: BoardGamePr
                     <CardMedia
                         component="img"
                         height="140"
-                        image={boardGame.imageUrl}
+                        image={`${baseURL}${boardGame.imageUrl}`}
                         alt={boardGame.title}
                     />
                 ) : (

@@ -11,23 +11,23 @@ import {
     Alert,
     Divider
 } from "@mui/material";
-import type { GameSessionTypeAdd } from "../types/GameSessionType.ts";
+import type { GameSessionTypeCreate } from "../types/GameSessionType.ts";
 import type { BoardGameTypeFull } from "../types/BoardGameType.ts";
 import { useNavigate } from "react-router-dom";
 import BoardGameSelector from "./BoardGameSelector";
 
 export interface GameSessionFormProps {
-    initialData?: GameSessionTypeAdd;
+    initialData?: GameSessionTypeCreate;
     initialBoardGameId?: number;
     onSubmit: (
-        formData: GameSessionTypeAdd,
+        formData: GameSessionTypeCreate,
         setError: (msg: string) => void
     ) => void;
     formTitle: string;
 }
 
 export default function GameSessionForm({ initialData, initialBoardGameId, onSubmit, formTitle }: GameSessionFormProps) {
-    const [form, setForm] = useState<GameSessionTypeAdd>({
+    const [form, setForm] = useState<GameSessionTypeCreate>({
         title: initialData?.title || "",
         date: initialData?.date || "",
         numberOfPlayers: initialData?.numberOfPlayers || 1,

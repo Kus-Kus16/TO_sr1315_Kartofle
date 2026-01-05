@@ -15,7 +15,8 @@ public interface GameSessionRepository extends JpaRepository<GameSession, Intege
             "JOIN s.participants p " +
             "JOIN FETCH s.owner " +
             "JOIN FETCH s.boardGames " +
-            "WHERE p.username = :username")
+            "WHERE p.username = :username " +
+            "ORDER BY s.date DESC")
     List<GameSession> findAllByParticipantUsername(@Param("username") String username);
 
 
@@ -27,10 +28,9 @@ public interface GameSessionRepository extends JpaRepository<GameSession, Intege
             "WHERE s.id = :id")
     Optional<GameSession> findByIdWithDetails(@Param("id") int id);
 
-    // TODO change for optional
     @Query("SELECT DISTINCT s FROM GameSession s " +
-            "LEFT JOIN FETCH s.participants " +
             "JOIN FETCH s.owner " +
-            "JOIN FETCH s.boardGames ")
-    Set<GameSession> findAllWithDetails();
+            "JOIN FETCH s.boardGames " +
+            "ORDER BY s.date DESC")
+    List<GameSession> findAllWithDetails();
 }

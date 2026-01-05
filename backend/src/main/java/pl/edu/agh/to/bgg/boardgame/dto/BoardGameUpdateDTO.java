@@ -1,4 +1,4 @@
-package pl.edu.agh.to.bgg.boardgame;
+package pl.edu.agh.to.bgg.boardgame.dto;
 
 import jakarta.validation.constraints.Min;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,9 +14,9 @@ public record BoardGameUpdateDTO(
         Integer minutesPlaytime,
 
         @Nullable
-        MultipartFile image,
+        MultipartFile imageFile,
 
         @Nullable
-        MultipartFile pdfRuleBook
+        MultipartFile rulebookFile
 ) {
 }

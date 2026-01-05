@@ -1,7 +1,0 @@
-package pl.edu.agh.to.bgg.session;
-
-public record VoteRequestDTO(
-        int boardGameId,
-        boolean userWantsGame,
-        boolean userKnowsGame
-) {}

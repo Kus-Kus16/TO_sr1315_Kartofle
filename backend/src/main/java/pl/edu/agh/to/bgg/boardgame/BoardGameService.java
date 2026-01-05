@@ -3,15 +3,14 @@ package pl.edu.agh.to.bgg.boardgame;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import pl.edu.agh.to.bgg.boardgame.dto.BoardGameCreateDTO;
+import pl.edu.agh.to.bgg.boardgame.dto.BoardGameUpdateDTO;
 import pl.edu.agh.to.bgg.exception.BoardGameNotFoundException;
+import pl.edu.agh.to.bgg.file.StoredFile;
+import pl.edu.agh.to.bgg.file.StoredFileService;
+import pl.edu.agh.to.bgg.session.GameSessionRepository;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class BoardGameService {
@@ -23,13 +22,17 @@ public class BoardGameService {
     private String pdfStoragePath;
 
     private final BoardGameRepository boardGameRepository;
+    private final GameSessionRepository gameSessionRepository;
+    private final StoredFileService storedFileService;
 
-    public BoardGameService(BoardGameRepository boardGameRepository) {
+    public BoardGameService(BoardGameRepository boardGameRepository, GameSessionRepository gameSessionRepository, StoredFileService storedFileService) {
         this.boardGameRepository = boardGameRepository;
+        this.gameSessionRepository = gameSessionRepository;
+        this.storedFileService = storedFileService;
     }
 
-    public List<BoardGame> getBoardGames() {
-        return boardGameRepository.findAll();
+    public List<BoardGame> getAvailableBoardGames() {
+        return boardGameRepository.findAllByDiscontinuedFalse();
     }
 
     public BoardGame getBoardGame(int id) {
@@ -38,10 +41,8 @@ public class BoardGameService {
                 .orElseThrow(BoardGameNotFoundException::new);
     }
 
-
     @Transactional
     public BoardGame addBoardGame(BoardGameCreateDTO dto) {
-
         BoardGame boardGame = new BoardGame(
                 dto.title(),
                 dto.description(),
@@ -50,14 +51,14 @@ public class BoardGameService {
                 dto.minutesPlaytime()
         );
 
-        if (dto.image() != null && !dto.image().isEmpty()) {
-            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.image());
-            boardGame.setImageUrl(path);
+        if (dto.imageFile() != null && !dto.imageFile().isEmpty()) {
+            StoredFile image = storedFileService.saveFile(dto.imageFile());
+            boardGame.setImageFile(image);
         }
 
-        if (dto.pdfRulebook() != null && !dto.pdfRulebook().isEmpty()) {
-            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.pdfRulebook());
-            boardGame.setPdfUrl(path);
+        if (dto.rulebookFile() != null && !dto.rulebookFile().isEmpty()) {
+            StoredFile pdf = storedFileService.saveFile(dto.rulebookFile());
+            boardGame.setPdfFile(pdf);
         }
 
         return boardGameRepository.save(boardGame);
@@ -79,70 +80,33 @@ public class BoardGameService {
             boardGame.setMinutesPlaytime(dto.minutesPlaytime());
         }
 
-        // update image file
-        deleteFileIfExists(boardGame.getImageUrl());
-        if (dto.image() != null && !dto.image().isEmpty()) {
-            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.image());
-            boardGame.setImageUrl(path);
+        if (dto.imageFile() != null && !dto.imageFile().isEmpty()) {
+            StoredFile image = storedFileService.saveFile(dto.imageFile());
+            storedFileService.deleteFile(boardGame.getImageFile());
+            boardGame.setImageFile(image);
         }
 
-        // update pdf file
-        deleteFileIfExists(boardGame.getPdfUrl());
-        if (dto.pdfRuleBook() != null && !dto.pdfRuleBook().isEmpty()) {
-            String path = addImageOrPdfFileToDatabaseAndGetPath(dto.pdfRuleBook());
-            boardGame.setPdfUrl(path);
+        if (dto.rulebookFile() != null && !dto.rulebookFile().isEmpty()) {
+            StoredFile pdf = storedFileService.saveFile(dto.rulebookFile());
+            storedFileService.deleteFile(boardGame.getPdfFile());
+            boardGame.setPdfFile(pdf);
         }
 
         return boardGame;
     }
 
-
     @Transactional
     public void deleteBoardGame(int boardGameId) {
-        boardGameRepository
+        BoardGame boardGame = boardGameRepository
                 .findById(boardGameId)
                 .orElseThrow(BoardGameNotFoundException::new);
 
-        boardGameRepository.deleteById(boardGameId);
-    }
-
-    private String addImageOrPdfFileToDatabaseAndGetPath(MultipartFile file) {
-        String contentType = file.getContentType();
-        if (contentType == null) throw new IllegalArgumentException("File content type is null");
-
-        // get file storage path
-        String storageDirPath;
-        if (contentType.startsWith("image/")) {
-            storageDirPath = imageStoragePath;
-        } else if (contentType.startsWith("application/pdf")) {
-            storageDirPath = pdfStoragePath;
-        } else throw new IllegalArgumentException("File should be image or pdf");
-
-        try {
-            Path projectRoot = Path.of("").toAbsolutePath();
-            Path targetDir = projectRoot.resolve(storageDirPath);
-            Files.createDirectories(targetDir);
-
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filePath = targetDir.resolve(fileName);
-
-            file.transferTo(filePath);
-
-            return filePath.toString();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save file", e);
-        }
-    }
-
-    private void deleteFileIfExists(String path) {
-        if (path == null || path.isBlank()) return;
-
-        File file = new File(path);
-        if (file.exists() && file.isFile()) {
-            boolean deleted = file.delete();
-            if (!deleted) {
-                System.err.println("Failed to delete file: " + path);
-            }
+        if (boardGameRepository.existsInAnySession(boardGameId)) {
+            boardGame.setDiscontinued(true);
+        } else {
+            storedFileService.deleteFile(boardGame.getImageFile());
+            storedFileService.deleteFile(boardGame.getPdfFile());
+            boardGameRepository.deleteById(boardGameId);
         }
     }
 }

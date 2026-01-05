@@ -3,8 +3,11 @@ package pl.edu.agh.to.bgg.session;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.agh.to.bgg.session.dto.GameSessionCreateDTO;
+import pl.edu.agh.to.bgg.session.dto.GameSessionFullDTO;
+import pl.edu.agh.to.bgg.session.dto.GameSessionPreviewDTO;
+import pl.edu.agh.to.bgg.vote.dto.VoteCreateDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -13,84 +16,69 @@ public class GameSessionController {
 
     private final GameSessionService gameSessionService;
 
-
     public GameSessionController(GameSessionService gameSessionService) {
         this.gameSessionService = gameSessionService;
     }
 
-
     @GetMapping
-        public List<GameSession> getSessions(@RequestParam(name = "username", required = false) String username) {
+    public List<GameSessionPreviewDTO> getSessions(@RequestParam(name = "username", required = false) String username) {
+        List<GameSession> sessions;
         if (username != null) {
-            return gameSessionService.getUserSessions(username);
+            sessions = gameSessionService.getUserSessions(username);
+        } else {
+            sessions = gameSessionService.getSessions();
         }
-        return new ArrayList<>(gameSessionService.getSessions());
-    }
 
+        return sessions.stream()
+                .map(GameSessionPreviewDTO::from)
+                .toList();
+    }
 
     @GetMapping("{id}")
-    public GameSession getSession(@PathVariable("id") int sessionId) {
-        return gameSessionService.getSession(sessionId);
+    public GameSessionFullDTO getSession(@PathVariable("id") int sessionId) {
+        GameSession session = gameSessionService.getSession(sessionId);
+        return GameSessionFullDTO.from(session);
     }
-
 
     @PatchMapping("{id}/participants")
-    public GameSession addParticipantToSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
-        return gameSessionService.joinSession(sessionId, username);
+    public GameSessionFullDTO addParticipantToSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
+        GameSession session = gameSessionService.joinSession(sessionId, username);
+        return GameSessionFullDTO.from(session);
     }
-
 
     @DeleteMapping("{id}/participants")
     public void deleteParticipantFromSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
         gameSessionService.leaveSession(sessionId, username);
     }
 
-
     @PostMapping
-    public GameSession createSession(@RequestBody @Valid GameSessionCreateDTO dto) {
-        return gameSessionService.addSession(dto);
+    public GameSessionFullDTO createSession(@RequestBody @Valid GameSessionCreateDTO dto, @RequestHeader("X-User-Login") String username) {
+        GameSession session = gameSessionService.addSession(dto, username);
+        return GameSessionFullDTO.from(session);
     }
 
-
     @DeleteMapping("{id}")
-    public void deleteSession(@PathVariable("id") int gameSessionId,
-                              @RequestParam String username) {
+    public void deleteSession(@PathVariable("id") int gameSessionId, @RequestHeader("X-User-Login") String username) {
         gameSessionService.deleteGameSession(gameSessionId, username);
     }
 
+//    @GetMapping("{id}/votes")
+//    public List<Vote> getSessionVoting(@PathVariable("id") int sessionId) {
+//        return gameSessionService.getSessionVoting(sessionId);
+//    }
 
-    @GetMapping("{id}/voting")
-    public List<Voting> getSessionVoting(@PathVariable("id") int sessionId) {
-        return gameSessionService.getSessionVoting(sessionId);
-    }
-
-
-    @PostMapping("{id}/voting")
-    public void voteInSession(
-            @PathVariable("id") int sessionId,
+    @PatchMapping("{id}/votes")
+    public void voteInSession(@PathVariable("id") int sessionId,
             @RequestHeader("X-User-Login") @NotBlank String username,
-            @RequestBody @Valid VoteRequestDTO voteDTO) {
-
-        gameSessionService.voteForGame(username, sessionId, voteDTO.boardGameId(), voteDTO.userWantsGame(), voteDTO.userKnowsGame());
+            @RequestBody @Valid VoteCreateDTO dto) {
+        gameSessionService.voteForGame(username, sessionId, dto);
     }
 
-
-    @PatchMapping("{id}/voting")
-    public void changeVoteInSession(
-            @PathVariable("id") int sessionId,
-            @RequestHeader("X-User-Login") @NotBlank String username,
-            @RequestBody @Valid VoteChangeDTO voteChangeDTO
-    ) {
-
-        gameSessionService.changeVote(username, voteChangeDTO.voteId(), voteChangeDTO.userWantsGame(), voteChangeDTO.userKnowsGame());
-    }
-
-
-    @PostMapping("{id}/voting/endVoting")
-    public void endSessionVotingAndSelectBoardGame(
+    @PostMapping("{id}/votes")
+    public void selectBoardGame(
             @PathVariable("id") int sessionId,
             @RequestHeader("X-User-Login") @NotBlank String username,
             @RequestParam("selectedBoardGameId") int selectedBoardGameId) {
-        gameSessionService.endSessionVotingAndChooseBoardGame(username, sessionId, selectedBoardGameId);
+        gameSessionService.selectSessionBoardGame(username, sessionId, selectedBoardGameId);
     }
 }

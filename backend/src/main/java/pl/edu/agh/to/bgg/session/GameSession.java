@@ -3,6 +3,7 @@ package pl.edu.agh.to.bgg.session;
 import jakarta.persistence.*;
 import pl.edu.agh.to.bgg.boardgame.BoardGame;
 import pl.edu.agh.to.bgg.user.User;
+import pl.edu.agh.to.bgg.vote.Vote;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,8 +22,7 @@ public class GameSession {
         public static final String NUMBER_OF_PLAYERS = "number_of_players";
         public static final String DESCRIPTION = "description";
         public static final String OWNER_ID = "owner_id";
-        public static final String VOTING_ENDED = "voting_ended";
-        public static final String BOARD_GAME_SELECTED = "selected_game";
+        public static final String SELECTED_BOARD_GAME = "selected_board_game";
     }
 
     public static final String PARTICIPANTS_TABLE_NAME = "participants";
@@ -31,7 +31,7 @@ public class GameSession {
         public static final String USER_ID = "user_id";
     }
 
-    public static final String BOARD_GAMES_TABLE_NAME = "board_game_ids";
+    public static final String BOARD_GAMES_TABLE_NAME = "session_boardgames";
     public static class BoardGameIdsColumns {
         public static final String SESSION_ID = "session_id";
         public static final String BOARD_GAME_ID = "board_game_id";
@@ -86,15 +86,12 @@ public class GameSession {
     )
     private final Set<User> participants = new HashSet<>();
 
-    @Column(name = Columns.VOTING_ENDED)
-    private boolean votingEnded;
-
     @ManyToOne
-    @JoinColumn(name = Columns.BOARD_GAME_SELECTED)
-    private BoardGame boardGameSelected;
+    @JoinColumn(name = Columns.SELECTED_BOARD_GAME)
+    private BoardGame seletedBoardGame;
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<Voting> voting = new ArrayList<>();
+    private final List<Vote> votes = new ArrayList<>();
 
     public GameSession(String title, LocalDate date, int numberOfPlayers, String description, Set<BoardGame> boardGames, User owner) {
         this.title = title;
@@ -103,8 +100,6 @@ public class GameSession {
         this.description = description;
         this.boardGames = boardGames;
         this.owner = owner;
-        votingEnded = false;
-        boardGameSelected = null;
     }
 
     public GameSession() {
@@ -143,20 +138,19 @@ public class GameSession {
         return participants;
     }
 
-    public boolean isVotingEnded() {
-        return votingEnded;
+    public boolean votingEnded() {
+        return seletedBoardGame != null;
     }
 
-    public void endVotingAndSelectBoardGame(BoardGame boardGame) {
-        votingEnded = true;
-        boardGameSelected = boardGame;
+    public void setSelectedBoardGame(BoardGame boardGame) {
+        seletedBoardGame = boardGame;
     }
 
-    public List<Voting> getVoting() {
-        return voting;
+    public List<Vote> getVotes() {
+        return votes;
     }
 
-    public BoardGame getBoardGameSelected() {
-        return boardGameSelected;
+    public BoardGame getSelectedBoardGame() {
+        return seletedBoardGame;
     }
 }

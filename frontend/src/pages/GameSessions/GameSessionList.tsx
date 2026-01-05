@@ -9,33 +9,35 @@ import {
 } from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import api from "../../api/axios"
-import type {GameSessionTypeFull} from "../../types/GameSessionType.ts";
+import type {GameSessionTypePreview} from "../../types/GameSessionType.ts";
 import GameSessionPreview from "../../components/GameSessionPreview.tsx";
 import AddElementCard from "../../components/AddElementCard.tsx";
+import { RefreshContext } from "../../components/RefreshContext.tsx";
 
 export default function GameSessionList() {
-    const [sessions, setSessions] = useState<GameSessionTypeFull[]>([]);
+    const [sessions, setSessions] = useState<GameSessionTypePreview[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchGameSessions = async () => {
-            try {
-                const { data } = await api.get<GameSessionTypeFull[]>('/sessions');
-                setSessions(data);
-            } catch {
-                setError("Nie udało się pobrać listy gier.");
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchGameSessions = async () => {
+        try {
+            setLoading(true);
+            const { data } = await api.get<GameSessionTypePreview[]>('/sessions');
+            setSessions(data);
+        } catch {
+            setError("Nie udało się pobrać listy gier.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchGameSessions().then();
     }, []);
 
     return (
-        <Box>
+        <RefreshContext.Provider value={{ refresh: fetchGameSessions }}>
             <Box sx={{p: 3}}>
                 <Typography variant="h4" gutterBottom>
                     Sesje gier
@@ -67,6 +69,6 @@ export default function GameSessionList() {
                     </Stack>
                 )}
             </Box>
-        </Box>
+        </RefreshContext.Provider>
     );
 }
