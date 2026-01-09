@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-    Box,
     Card,
     CardContent,
     CardActions,
@@ -15,6 +14,7 @@ import type { GameSessionTypeCreate } from "../types/GameSessionType.ts";
 import type { BoardGameTypeDetails } from "../types/BoardGameType.ts";
 import { useNavigate } from "react-router-dom";
 import BoardGameSelector from "./BoardGameSelector";
+import TightLayoutBox from "../layout/TightLayoutBox.tsx";
 
 export interface GameSessionFormProps {
     initialData?: GameSessionTypeCreate;
@@ -89,7 +89,7 @@ export default function GameSessionForm({ initialData, initialBoardGameId, onSub
     };
 
     return (
-        <Box sx={{ maxWidth: 700, margin: "auto" }}>
+        <TightLayoutBox>
             <Card sx={{ p: 2 }}>
                 <CardContent component="form" onSubmit={handleSubmit}>
                     <Stack spacing={2}>
@@ -172,6 +172,6 @@ export default function GameSessionForm({ initialData, initialBoardGameId, onSub
                     </CardActions>
                 </CardContent>
             </Card>
-        </Box>
+        </TightLayoutBox>
     );
 }

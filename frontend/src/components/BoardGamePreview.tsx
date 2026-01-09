@@ -13,26 +13,29 @@ interface BoardGamePreviewProps {
 
 export default function BoardGamePreview({ boardGame, showActions }: BoardGamePreviewProps) {
     const auth = useContext(AuthContext);
+    console.log(boardGame.imageUrl);
 
     return (
-        <Card sx={{ minWidth: 240, maxWidth: 345 }}>
+        <Card sx={{ minWidth: 200, maxWidth: 345 }}>
             <CardActionArea component={RouterLink} to={`/boardgames/${boardGame.id}`} sx={{ height: "100%" }}>
 
                 {boardGame.imageUrl ? (
                     <CardMedia
                         component="img"
-                        height="140"
                         image={`${baseURL}${boardGame.imageUrl}`}
                         alt={boardGame.title}
+                        sx={{
+                            aspectRatio: "1 / 1"
+                        }}
                     />
                 ) : (
                     <Box
                         sx={{
-                            height: 140,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            bgcolor: "grey.100"
+                            bgcolor: "grey.100",
+                            aspectRatio: "1 / 1"
                         }}
                     >
                         <ImageNotSupported sx={{ fontSize: 80, color: "grey.400" }} />

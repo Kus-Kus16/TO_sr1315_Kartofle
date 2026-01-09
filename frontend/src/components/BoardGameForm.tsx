@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { ImageNotSupported, PictureAsPdf, Photo } from '@mui/icons-material';
 import type { BoardGameTypeDetails } from "../types/BoardGameType.ts";
 import {baseURL} from "../api/axios.tsx";
+import TightLayoutBox from "../layout/TightLayoutBox.tsx";
 
 export interface BoardGameFormData {
     title: string;
@@ -169,7 +170,7 @@ export default function BoardGameForm(props: BoardGameFormProps) {
     }
 
     return (
-        <Box sx={{ maxWidth: 700, margin: "auto" }}>
+        <TightLayoutBox>
             <Card>
                 {imagePreview ? (
                     <CardMedia
@@ -177,6 +178,9 @@ export default function BoardGameForm(props: BoardGameFormProps) {
                         height="300"
                         image={imagePreview}
                         alt="Podgląd obrazka"
+                        sx={{
+                            aspectRatio: "1 / 1"
+                        }}
                     />
                 ) : (
                     <Box
@@ -344,6 +348,6 @@ export default function BoardGameForm(props: BoardGameFormProps) {
                     </CardActions>
                 </CardContent>
             </Card>
-        </Box>
+        </TightLayoutBox>
     );
 }

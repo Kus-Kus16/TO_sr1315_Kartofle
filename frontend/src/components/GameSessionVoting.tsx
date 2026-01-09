@@ -159,8 +159,8 @@ export default function VotingSection({ session, currentUserId, isOwner, disable
                 return (
                     <Card key={boardGame.id} variant="outlined">
                         <Stack direction="row" alignItems="center">
-                            <CardActionArea sx={{ flexGrow: 1 }} component={RouterLink} to={`/boardgames/${boardGame.id}`} >
-                                <CardContent sx={{p: 2}}>
+                            <CardActionArea sx={{ flexGrow: 0 }} component={RouterLink} to={`/boardgames/${boardGame.id}`} >
+                                <CardContent sx={{p: 2, height: "40px", alignContent: "center"}}>
                                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                                         <Typography width={"30%"} variant="h6">
                                             {boardGame.title}

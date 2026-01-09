@@ -1,30 +1,41 @@
 package pl.edu.agh.to.bgg.configs;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import pl.edu.agh.to.bgg.boardgame.BoardGame;
 import pl.edu.agh.to.bgg.boardgame.BoardGameRepository;
+import pl.edu.agh.to.bgg.file.FileStoragePathResolver;
+import pl.edu.agh.to.bgg.file.StoredFileType;
 import pl.edu.agh.to.bgg.session.GameSession;
 import pl.edu.agh.to.bgg.session.GameSessionRepository;
 import pl.edu.agh.to.bgg.user.User;
 import pl.edu.agh.to.bgg.user.UserRepository;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Configuration
 @Profile("dev")
-public class DatabaseCreator {
+public class DatabaseConfig {
     private final BoardGameRepository boardGameRepository;
     private final UserRepository userRepository;
     private final GameSessionRepository gameSessionRepository;
+    private final FileStoragePathResolver fileStoragePathResolver;
 
-    public DatabaseCreator(BoardGameRepository boardGameRepository, UserRepository userRepository, GameSessionRepository gameSessionRepository) {
+    public DatabaseConfig(BoardGameRepository boardGameRepository, UserRepository userRepository,
+                          GameSessionRepository gameSessionRepository, FileStoragePathResolver fileStoragePathResolver) {
         this.boardGameRepository = boardGameRepository;
         this.userRepository = userRepository;
         this.gameSessionRepository = gameSessionRepository;
+        this.fileStoragePathResolver = fileStoragePathResolver;
     }
 
     @PostConstruct
@@ -108,6 +119,28 @@ public class DatabaseCreator {
                     90
             );
             boardGameRepository.save(bg);
+        }
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        for (StoredFileType type : StoredFileType.values()) {
+            Path storagePath = Path.of(fileStoragePathResolver.resolve(type));
+            if (Files.exists(storagePath)) {
+                try (Stream<Path> paths = Files.walk(storagePath)){
+                    paths
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(p -> {
+                            try {
+                                Files.deleteIfExists(p);
+                            } catch (IOException e) {
+                                System.err.println("Nie udało się usunąć pliku: " + p);
+                            }
+                        });
+                } catch (IOException e) {
+                    System.err.println("Błąd podczas usuwania folderu: " + storagePath);
+                }
+            }
         }
     }
 }

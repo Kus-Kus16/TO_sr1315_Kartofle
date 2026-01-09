@@ -29,13 +29,13 @@ export default function BoardGameList() {
     
     return (
         <Box>
-            <Box sx={{p: 3}}>
+            <Box sx={{m: 3}}>
                 <Typography variant="h4" gutterBottom>
                     Gry planszowe
                 </Typography>
                 <Divider />
             </Box>
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ m: 3 }}>
                 {loading && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
                         <CircularProgress />
@@ -49,14 +49,16 @@ export default function BoardGameList() {
                 )}
 
                 {!loading && !error && (
-                    <Grid container spacing={3} columns={16}>
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Grid container spacing={3} columns={10}>
+                        <Grid size={{ xs: 10, sm: 5, md: 2 }}>
                             <AddElementCard title={"Dodaj nową grę"}
-                                            onClick={() => navigate("/boardgames/new")}/>
+                                            onClick={() => navigate("/boardgames/new")}
+                                            minWidth={200} maxWidth={345}
+                            />
                         </Grid>
 
                         {boardGames.map((game) => (
-                            <Grid key={game.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                            <Grid key={game.id} size={{ xs: 10, sm: 5, md: 2 }}>
                                 <BoardGamePreview boardGame={game} showActions={true} />
                             </Grid>
                         ))}
