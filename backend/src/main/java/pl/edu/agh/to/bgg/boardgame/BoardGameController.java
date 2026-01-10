@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.to.bgg.boardgame.dto.BoardGameCreateDTO;
 import pl.edu.agh.to.bgg.boardgame.dto.BoardGameDetailsDTO;
 import pl.edu.agh.to.bgg.boardgame.dto.BoardGameUpdateDTO;
+import pl.edu.agh.to.bgg.boardgame.external.ExternalBoardGameEntry;
+import pl.edu.agh.to.bgg.boardgame.external.ExternalBoardGameService;
 
 import java.util.List;
 
@@ -12,9 +14,11 @@ import java.util.List;
 @RequestMapping("boardgames")
 public class BoardGameController {
     private final BoardGameService boardGameService;
+    private final ExternalBoardGameService externalBoardGameService;
 
-    public BoardGameController(BoardGameService boardGameService) {
+    public BoardGameController(BoardGameService boardGameService, ExternalBoardGameService externalBoardGameService) {
         this.boardGameService = boardGameService;
+        this.externalBoardGameService = externalBoardGameService;
     }
 
     @GetMapping
@@ -50,5 +54,16 @@ public class BoardGameController {
     @DeleteMapping("{id}")
     public void deleteBoardGame(@PathVariable("id") int boardGameId) {
         boardGameService.deleteBoardGame(boardGameId);
+    }
+
+    @GetMapping("external")
+    public List<ExternalBoardGameEntry> getExternalBoardGames(@RequestParam String query) {
+        return externalBoardGameService.searchFor(query);
+    }
+
+    @PostMapping("external/{id}")
+    public BoardGameDetailsDTO importExternalBoardGame(@PathVariable int id) {
+        BoardGame boardGame = externalBoardGameService.importBoardGame(id);
+        return BoardGameDetailsDTO.from(boardGame);
     }
 }

@@ -54,9 +54,13 @@ public class BoardGameService {
             boardGame.setRulebookFile(rulebook);
         }
 
-        return boardGameRepository.save(boardGame);
+        return saveBoardGame(boardGame);
     }
 
+    @Transactional
+    public BoardGame saveBoardGame(BoardGame boardGame) {
+        return boardGameRepository.save(boardGame);
+    }
 
     @Transactional
     public BoardGame updateBoardGame(int id, BoardGameUpdateDTO dto) {
