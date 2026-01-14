@@ -1,20 +1,35 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import './styles/global.css'
-import AppRouter from './app/AppRouter'
-import AuthProvider from './context/AuthProvider'
+import AuthProvider from './auth/AuthProvider'
 import App from './App'
 import { BrowserRouter } from 'react-router-dom'
+import {createTheme, ThemeProvider} from "@mui/material";
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: "#1976d2",
+            contrastText: "#fff",
+        },
+    },
+    components: {
+        MuiCard: {
+            defaultProps: {
+                elevation: 4,
+            },
+        },
+    },
+});
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <App>
-          <AppRouter />
-        </App>
-      </AuthProvider>
+        <ThemeProvider theme={theme}>
+            <AuthProvider>
+                <App/>
+            </AuthProvider>
+        </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

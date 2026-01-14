@@ -1,9 +1,10 @@
 package pl.edu.agh.to.bgg.boardgame;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import pl.edu.agh.to.bgg.boardgame.dto.BoardGameCreateDTO;
+import pl.edu.agh.to.bgg.boardgame.dto.BoardGameDetailsDTO;
+import pl.edu.agh.to.bgg.boardgame.dto.BoardGameUpdateDTO;
 
 import java.util.List;
 
@@ -17,34 +18,37 @@ public class BoardGameController {
     }
 
     @GetMapping
-    public List<BoardGame> getBoardGames() {
-        return boardGameService.getBoardGames();
+    public List<BoardGameDetailsDTO> getBoardGames() {
+        return boardGameService.getAvailableBoardGames()
+                .stream()
+                .map(BoardGameDetailsDTO::from)
+                .toList();
     }
 
     @GetMapping("{id}")
-    public BoardGame getBoardGame(@PathVariable("id") int boardGameId) {
-        try {
-            return boardGameService.getBoardGame(boardGameId);
-        } catch (BoardGameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+    public BoardGameDetailsDTO getBoardGame(@PathVariable("id") int boardGameId) {
+        BoardGame boardGame = boardGameService.getBoardGame(boardGameId);
+        return BoardGameDetailsDTO.from(boardGame);
     }
 
-    @PostMapping
-    public BoardGame createBoardGame(@RequestBody @Valid BoardGameCreateDTO dto) {
-        try {
-            return boardGameService.addBoardGame(dto);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+    @PostMapping(consumes = "multipart/form-data")
+    public BoardGameDetailsDTO createBoardGame(@ModelAttribute @Valid BoardGameCreateDTO dto) {
+        if (dto.minPlayers() > dto.maxPlayers()) {
+            throw new IllegalArgumentException("maxPlayers must be greater than or equal to minPlayers");
         }
+
+        BoardGame boardGame = boardGameService.addBoardGame(dto);
+        return BoardGameDetailsDTO.from(boardGame);
+    }
+
+    @PatchMapping(value = "{id}", consumes = "multipart/form-data")
+    public BoardGameDetailsDTO updateBoardGame(@PathVariable int id, @ModelAttribute @Valid BoardGameUpdateDTO dto) {
+        BoardGame boardGame = boardGameService.updateBoardGame(id, dto);
+        return BoardGameDetailsDTO.from(boardGame);
     }
 
     @DeleteMapping("{id}")
     public void deleteBoardGame(@PathVariable("id") int boardGameId) {
-        try {
-            boardGameService.deleteBoardGame(boardGameId);
-        } catch (BoardGameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+        boardGameService.deleteBoardGame(boardGameId);
     }
 }

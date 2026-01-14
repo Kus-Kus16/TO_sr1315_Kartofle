@@ -1,0 +1,100 @@
+package pl.edu.agh.to.bgg.file;
+
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import pl.edu.agh.to.bgg.exception.StoredFileNotFoundException;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
+
+@Service
+public class StoredFileService {
+    private static final long IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2 MB
+    private static final long PDF_MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+    private final StoredFileRepository storedFileRepository;
+    private final FileStorageService fileStorageService;
+
+    public StoredFileService(StoredFileRepository storedFileRepository, FileStorageService fileStorageService) {
+        this.storedFileRepository = storedFileRepository;
+        this.fileStorageService = fileStorageService;
+    }
+
+    @Transactional
+    public StoredFile saveFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            throw new IllegalArgumentException("StoredFile content type is null");
+        }
+
+        StoredFileType fileType = switch (contentType) {
+            case String ct when ct.startsWith("image/") -> {
+                validateImage(file);
+                yield StoredFileType.IMAGE;
+            }
+            case String ct when ct.startsWith("application/pdf") -> {
+                validatePdfFile(file);
+                yield StoredFileType.PDF;
+            }
+            default -> throw new IllegalArgumentException(
+                "StoredFile should be image or pdf"
+            );
+        };
+
+        UUID id = UUID.randomUUID();
+        StoredFile storedFile = new StoredFile(
+                id,
+                file.getOriginalFilename(),
+                contentType,
+                file.getSize());
+
+        Path filepath = fileStorageService.save(file, fileType, id.toString());
+        storedFile.setStoragePath(filepath.toString());
+
+        return storedFileRepository.save(storedFile);
+    }
+
+    public StoredFile getFile(UUID id) {
+        return storedFileRepository
+                .findById(id)
+                .orElseThrow(StoredFileNotFoundException::new);
+    }
+
+    @Transactional
+    public Resource loadFile(UUID id) {
+        StoredFile file = storedFileRepository
+                .findById(id)
+                .orElseThrow(StoredFileNotFoundException::new);
+
+        Path path = Path.of(file.getStoragePath());
+        return new FileSystemResource(path.toFile());
+    }
+
+    @Transactional
+    public void deleteFile(StoredFile storedFile) {
+        if (storedFile == null) {
+            return;
+        }
+
+        fileStorageService.deleteIfExists(storedFile);
+        storedFileRepository.delete(storedFile);
+    }
+
+    private void validateImage(MultipartFile image) {
+        if (image.getSize() > IMAGE_MAX_SIZE) {
+            throw new IllegalArgumentException("Image size should be no more than 2MB");
+        }
+    }
+
+    private void validatePdfFile(MultipartFile pdfFile) {
+        if (pdfFile.getSize() > PDF_MAX_SIZE) {
+            throw new IllegalArgumentException("PDF size should be no more than 5MB");
+        }
+    }
+}

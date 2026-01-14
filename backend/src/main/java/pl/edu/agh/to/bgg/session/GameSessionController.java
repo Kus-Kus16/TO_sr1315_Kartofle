@@ -1,18 +1,19 @@
 package pl.edu.agh.to.bgg.session;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import pl.edu.agh.to.bgg.boardgame.BoardGameNotFoundException;
-import pl.edu.agh.to.bgg.user.UserNotFoundException;
-import pl.edu.agh.to.bgg.user.UserRequestDTO;
+import pl.edu.agh.to.bgg.session.dto.GameSessionCreateDTO;
+import pl.edu.agh.to.bgg.session.dto.GameSessionDetailsDTO;
+import pl.edu.agh.to.bgg.session.dto.GameSessionPreviewDTO;
+import pl.edu.agh.to.bgg.vote.dto.VoteCreateDTO;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("sessions")
 public class GameSessionController {
+
     private final GameSessionService gameSessionService;
 
     public GameSessionController(GameSessionService gameSessionService) {
@@ -20,41 +21,64 @@ public class GameSessionController {
     }
 
     @GetMapping
-        public List<GameSession> getSessions(@RequestParam(name = "username", required = false) String username) {
+    public List<GameSessionPreviewDTO> getSessions(@RequestParam(name = "username", required = false) String username) {
+        List<GameSession> sessions;
         if (username != null) {
-            return gameSessionService.getUserSessions(username);
+            sessions = gameSessionService.getUserSessions(username);
+        } else {
+            sessions = gameSessionService.getSessions();
         }
-        return gameSessionService.getSessions();
+
+        return sessions.stream()
+                .map(GameSessionPreviewDTO::from)
+                .toList();
     }
 
     @GetMapping("{id}")
-    public GameSession getSession(@PathVariable("id") int sessionId) {
-        try {
-            return gameSessionService.getSession(sessionId);
-        } catch (GameSessionNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+    public GameSessionDetailsDTO getSession(@PathVariable("id") int sessionId) {
+        GameSession session = gameSessionService.getSession(sessionId);
+        return GameSessionDetailsDTO.from(session);
     }
 
-    @PutMapping("{id}")
-    public GameSession joinSession(@PathVariable("id") int sessionId, @RequestBody @Valid UserRequestDTO userDTO) {
-        try {
-            return gameSessionService.joinSession(sessionId, userDTO.username());
-        } catch (GameSessionNotFoundException | UserNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+    @PatchMapping("{id}/participants")
+    public GameSessionDetailsDTO addParticipantToSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
+        GameSession session = gameSessionService.joinSession(sessionId, username);
+        return GameSessionDetailsDTO.from(session);
+    }
+
+    @DeleteMapping("{id}/participants")
+    public void deleteParticipantFromSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
+        gameSessionService.leaveSession(sessionId, username);
     }
 
     @PostMapping
-    public GameSession createSession(@RequestBody @Valid GameSessionCreateDTO dto) {
-        try {
-            return gameSessionService.addSession(dto);
-        } catch (BoardGameNotFoundException | UserNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+    public GameSessionDetailsDTO createSession(@RequestBody @Valid GameSessionCreateDTO dto, @RequestHeader("X-User-Login") String username) {
+        GameSession session = gameSessionService.addSession(dto, username);
+        return GameSessionDetailsDTO.from(session);
+    }
+
+    @DeleteMapping("{id}")
+    public void deleteSession(@PathVariable("id") int gameSessionId, @RequestHeader("X-User-Login") String username) {
+        gameSessionService.deleteGameSession(gameSessionId, username);
+    }
+
+//    @GetMapping("{id}/votes")
+//    public List<Vote> getSessionVoting(@PathVariable("id") int sessionId) {
+//        return gameSessionService.getSessionVoting(sessionId);
+//    }
+
+    @PatchMapping("{id}/votes")
+    public void voteInSession(@PathVariable("id") int sessionId,
+            @RequestHeader("X-User-Login") @NotBlank String username,
+            @RequestBody @Valid VoteCreateDTO dto) {
+        gameSessionService.voteForGame(username, sessionId, dto);
+    }
+
+    @PostMapping("{id}/votes")
+    public void selectBoardGame(
+            @PathVariable("id") int sessionId,
+            @RequestHeader("X-User-Login") @NotBlank String username,
+            @RequestParam("selectedBoardGameId") int selectedBoardGameId) {
+        gameSessionService.selectSessionBoardGame(username, sessionId, selectedBoardGameId);
     }
 }

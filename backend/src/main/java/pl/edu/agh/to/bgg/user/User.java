@@ -2,6 +2,8 @@ package pl.edu.agh.to.bgg.user;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = User.TABLE_NAME)
 public class User {
@@ -33,5 +35,17 @@ public class User {
 
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && Objects.equals(username, user.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username);
     }
 }
