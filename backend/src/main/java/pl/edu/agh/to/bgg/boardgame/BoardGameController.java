@@ -1,6 +1,7 @@
 package pl.edu.agh.to.bgg.boardgame;
 
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.to.bgg.boardgame.dto.BoardGameCreateDTO;
 import pl.edu.agh.to.bgg.boardgame.dto.BoardGameDetailsDTO;
@@ -24,6 +25,19 @@ public class BoardGameController {
     @GetMapping
     public List<BoardGameDetailsDTO> getBoardGames() {
         return boardGameService.getAvailableBoardGames()
+                .stream()
+                .map(BoardGameDetailsDTO::from)
+                .toList();
+    }
+
+    @GetMapping("paged")
+    public List<BoardGameDetailsDTO> getBoardGamesPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Page<BoardGame> boardGamesPage = boardGameService.getAvailableBoardGamesPage(page, size);
+
+        return boardGamesPage.getContent()
                 .stream()
                 .map(BoardGameDetailsDTO::from)
                 .toList();
