@@ -49,6 +49,25 @@ public class GameSessionService {
         return gameSessionRepository.findAllByParticipantUsername(username);
     }
 
+    public List<GameSession> getSessionsFiltered(
+            String username,
+            String boardGameTitle,
+            Integer maxMinutesPlaytime,
+            Integer minNumberOfPlayers,
+            Integer maxNumberOfPlayers
+    ) {
+        return gameSessionRepository.findAllWithDetails().stream()
+                .filter(gameSession -> username == null || gameSession.getParticipants().stream()
+                        .anyMatch(user -> user.getUsername().equals(username)))
+                .filter(gameSession -> boardGameTitle == null || gameSession.getBoardGames().stream()
+                        .anyMatch(boardGame -> boardGame.getTitle().toLowerCase().contains(boardGameTitle.toLowerCase())))
+                .filter(gameSession -> maxMinutesPlaytime == null || gameSession.getBoardGames().stream()
+                        .anyMatch(boardGame -> boardGame.getMinutesPlaytime() <= maxMinutesPlaytime))
+                .filter(gameSession -> minNumberOfPlayers == null || gameSession.getNumberOfPlayers() >= minNumberOfPlayers)
+                .filter(gameSession -> maxNumberOfPlayers == null || gameSession.getNumberOfPlayers() <= maxNumberOfPlayers)
+                .toList();
+    }
+
     @Transactional
     public GameSession joinSession(int sessionId, String username) {
         GameSession gameSession = gameSessionRepository

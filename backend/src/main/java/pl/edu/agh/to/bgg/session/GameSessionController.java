@@ -40,6 +40,21 @@ public class GameSessionController {
         return GameSessionDetailsDTO.from(session);
     }
 
+    @GetMapping("/filter")
+    public List<GameSessionPreviewDTO> filterSessions(
+            @RequestParam(name = "username", required = false) String username,
+            @RequestParam(name = "boardGameName", required = false) String boardGameName,
+            @RequestParam(name = "minutes", required = false) Integer minutes,
+            @RequestParam(name = "minNumberOfPlayers", required = false) Integer minNumberOfPlayers,
+            @RequestParam(name = "maxNumberOfPlayers", required = false) Integer maxNumberOfPlayers
+    ) {
+        List<GameSession> sessions = gameSessionService.getSessionsFiltered(username, boardGameName, minutes, minNumberOfPlayers, maxNumberOfPlayers);
+        return sessions.stream()
+                .map(GameSessionPreviewDTO::from)
+                .toList();
+    }
+
+
     @PatchMapping("{id}/participants")
     public GameSessionDetailsDTO addParticipantToSession(@PathVariable("id") int sessionId, @RequestHeader("X-User-Login") String username) {
         GameSession session = gameSessionService.joinSession(sessionId, username);
