@@ -27,7 +27,7 @@ export default function BoardGameList() {
                     content: BoardGameTypeDetails[];
                     totalPages: number;
                     totalElements: number;
-                }>(`/boardgames/?page=${page}&size=${size}`);
+                }>(`/boardgames?page=${page}&size=${size}`);
 
                 setBoardGames(data.content);
                 setTotalPages(data.totalPages);

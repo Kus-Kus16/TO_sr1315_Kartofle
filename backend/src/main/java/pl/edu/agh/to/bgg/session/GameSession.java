@@ -153,4 +153,14 @@ public class GameSession {
     public BoardGame getSelectedBoardGame() {
         return seletedBoardGame;
     }
+
+    public int getMaxMinutesPlaytime() {
+        if (this.votingEnded())
+            return this.getSelectedBoardGame().getMinutesPlaytime();
+
+        return this.getBoardGames().stream()
+                .mapToInt(BoardGame::getMinutesPlaytime)
+                .max()
+                .orElse(0);
+    }
 }

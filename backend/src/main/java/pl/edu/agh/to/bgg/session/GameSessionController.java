@@ -44,11 +44,11 @@ public class GameSessionController {
     public List<GameSessionPreviewDTO> filterSessions(
             @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "boardGameName", required = false) String boardGameName,
-            @RequestParam(name = "minutes", required = false) Integer minutes,
+            @RequestParam(name = "maxMinutesPlaytime", required = false) Integer maxMinutesPlaytime,
             @RequestParam(name = "minNumberOfPlayers", required = false) Integer minNumberOfPlayers,
             @RequestParam(name = "maxNumberOfPlayers", required = false) Integer maxNumberOfPlayers
     ) {
-        List<GameSession> sessions = gameSessionService.getSessionsFiltered(username, boardGameName, minutes, minNumberOfPlayers, maxNumberOfPlayers);
+        List<GameSession> sessions = gameSessionService.getSessionsFiltered(username, boardGameName, maxMinutesPlaytime, minNumberOfPlayers, maxNumberOfPlayers);
         return sessions.stream()
                 .map(GameSessionPreviewDTO::from)
                 .toList();

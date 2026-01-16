@@ -61,8 +61,7 @@ public class GameSessionService {
                         .anyMatch(user -> user.getUsername().equals(username)))
                 .filter(gameSession -> boardGameTitle == null || gameSession.getBoardGames().stream()
                         .anyMatch(boardGame -> boardGame.getTitle().toLowerCase().contains(boardGameTitle.toLowerCase())))
-                .filter(gameSession -> maxMinutesPlaytime == null || gameSession.getBoardGames().stream()
-                        .anyMatch(boardGame -> boardGame.getMinutesPlaytime() <= maxMinutesPlaytime))
+                .filter(gameSession -> maxMinutesPlaytime == null || gameSession.getMaxMinutesPlaytime() <= maxMinutesPlaytime)
                 .filter(gameSession -> minNumberOfPlayers == null || gameSession.getNumberOfPlayers() >= minNumberOfPlayers)
                 .filter(gameSession -> maxNumberOfPlayers == null || gameSession.getNumberOfPlayers() <= maxNumberOfPlayers)
                 .toList();
