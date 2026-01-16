@@ -37,7 +37,7 @@ public class BoardGameController {
 //                .toList();
 //    }
 
-    @GetMapping("paged")
+    @GetMapping()
     public Page<BoardGameDetailsDTO> getBoardGamesPaged(
         @RequestParam(defaultValue = "0") Integer page,
         @RequestParam(required = false) Integer size
