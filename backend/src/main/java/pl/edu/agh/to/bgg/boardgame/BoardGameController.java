@@ -1,6 +1,7 @@
 package pl.edu.agh.to.bgg.boardgame;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.to.bgg.boardgame.dto.BoardGameCreateDTO;
@@ -17,30 +18,38 @@ public class BoardGameController {
     private final BoardGameService boardGameService;
     private final ExternalBoardGameService externalBoardGameService;
 
+    @Value("${app.boardgame.defaultPageSize}")
+    private int defaultPageSize;
+
+    @Value("${app.boardgame.maxPageSize}")
+    private int maxPageSize;
+
     public BoardGameController(BoardGameService boardGameService, ExternalBoardGameService externalBoardGameService) {
         this.boardGameService = boardGameService;
         this.externalBoardGameService = externalBoardGameService;
     }
 
-    @GetMapping
-    public List<BoardGameDetailsDTO> getBoardGames() {
-        return boardGameService.getAvailableBoardGames()
-                .stream()
-                .map(BoardGameDetailsDTO::from)
-                .toList();
-    }
+//    @GetMapping
+//    public List<BoardGameDetailsDTO> getBoardGames() {
+//        return boardGameService.getAvailableBoardGames()
+//                .stream()
+//                .map(BoardGameDetailsDTO::from)
+//                .toList();
+//    }
 
     @GetMapping("paged")
-    public List<BoardGameDetailsDTO> getBoardGamesPaged(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+    public Page<BoardGameDetailsDTO> getBoardGamesPaged(
+        @RequestParam(defaultValue = "0") Integer page,
+        @RequestParam(required = false) Integer size
     ) {
-        Page<BoardGame> boardGamesPage = boardGameService.getAvailableBoardGamesPage(page, size);
+        int pageSize = (size != null) ? size : defaultPageSize;
 
-        return boardGamesPage.getContent()
-                .stream()
-                .map(BoardGameDetailsDTO::from)
-                .toList();
+        if (pageSize > maxPageSize)
+            throw new IllegalArgumentException("Max page size exceeded: " + maxPageSize);
+
+        Page<BoardGame> boardGamesPage = boardGameService.getAvailableBoardGamesPage(page, pageSize);
+
+        return boardGamesPage.map(BoardGameDetailsDTO::from);
     }
 
     @GetMapping("{id}")
