@@ -58,6 +58,25 @@ Aplikacja służy do organizowania sesji gier planszowych. Umożliwia zarządzan
 ![](img/m2/endpoints_boardGameController.png)
 ![](img/m2/endpoints_storedFileController.png)
 
+## Milestone 3
+
+### Changelog
+
+#### Element techniczny
+ - Integracja z BoardGameGeek (BGG) API
+ - Dodawanie planszówki z BGG poprzez wyszukiwanie po tytule
+ - Pobieranie podstawowych informacji z BGG (tytuł, opis, liczba graczy, czas trwania)
+ - Pobieranie obrazka z API
+ - Stronicowanie wyników
+
+#### Planszówki
+ - Wyszukiwanie i import gier z BoardGameGeek API
+
+#### Sesje gry
+ - Filtrowanie sesji po nazwie planszówki
+ - Filtrowanie sesji po maksymalnym czasie trwania
+ - Filtrowanie sesji po liczbie graczy
+
 ## Uruchomienie projektu
 ### Backend
  W katalogu głównym projektu:

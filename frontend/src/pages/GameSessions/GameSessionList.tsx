@@ -22,7 +22,7 @@ export default function GameSessionList() {
     const [error, setError] = useState<string | null>(null);
     const [filterUsername, setFilterUsername] = useState<string | null>(null);
     const [filterBoardGameName, setFilterBoardGameName] = useState<string | null>(null);
-    const [filterMinutes, setFilterMinutes] = useState<number | null>(null);
+    const [filterMaxMinutesPlaytime, setFilterMaxMinutesPlaytime] = useState<number | null>(null);
     const [filterMinPlayers, setFilterMinPlayers] = useState<number | null>(null);
     const [filterMaxPlayers, setFilterMaxPlayers] = useState<number | null>(null);
     const navigate = useNavigate();
@@ -30,7 +30,7 @@ export default function GameSessionList() {
     const fetchGameSessions = async (filters?: {
         username?: string | null;
         boardGameName?: string | null;
-        minutes?: number | null;
+        maxMinutesPlaytime?: number | null;
         minNumberOfPlayers?: number | null;
         maxNumberOfPlayers?: number | null;
     }) => {
@@ -41,7 +41,7 @@ export default function GameSessionList() {
             if (filters) {
                 if (filters.username) params.username = filters.username;
                 if (filters.boardGameName) params.boardGameName = filters.boardGameName;
-                if (filters.minutes != null) params.minutes = filters.minutes;
+                if (filters.maxMinutesPlaytime != null) params.maxMinutesPlaytime = filters.maxMinutesPlaytime;
                 if (filters.minNumberOfPlayers != null) params.minNumberOfPlayers = filters.minNumberOfPlayers;
                 if (filters.maxNumberOfPlayers != null) params.maxNumberOfPlayers = filters.maxNumberOfPlayers;
             }
@@ -92,7 +92,7 @@ export default function GameSessionList() {
                                     <TextField fullWidth label="Nazwa gry" value={filterBoardGameName ?? ''} onChange={e => setFilterBoardGameName(e.target.value || null)} />
                                 </Box>
                                 <Box sx={{ minWidth: 120 }}>
-                                    <TextField type="number" fullWidth label="Max min" value={filterMinutes ?? ''} onChange={e => setFilterMinutes(e.target.value ? Number(e.target.value) : null)} />
+                                    <TextField type="number" fullWidth label="Max min" value={filterMaxMinutesPlaytime ?? ''} onChange={e => setFilterMaxMinutesPlaytime(e.target.value ? Number(e.target.value) : null)} />
                                 </Box>
                                 <Box sx={{ minWidth: 120 }}>
                                     <TextField type="number" fullWidth label="Min graczy" value={filterMinPlayers ?? ''} onChange={e => setFilterMinPlayers(e.target.value ? Number(e.target.value) : null)} />
@@ -104,7 +104,7 @@ export default function GameSessionList() {
                                     <Button variant="contained" onClick={() => fetchGameSessions({
                                         username: filterUsername,
                                         boardGameName: filterBoardGameName,
-                                        minutes: filterMinutes,
+                                        maxMinutesPlaytime: filterMaxMinutesPlaytime,
                                         minNumberOfPlayers: filterMinPlayers,
                                         maxNumberOfPlayers: filterMaxPlayers
                                     })}>Filtruj</Button>
@@ -113,7 +113,7 @@ export default function GameSessionList() {
                                     <Button variant="outlined" onClick={() => {
                                         setFilterUsername(null);
                                         setFilterBoardGameName(null);
-                                        setFilterMinutes(null);
+                                        setFilterMaxMinutesPlaytime(null);
                                         setFilterMinPlayers(null);
                                         setFilterMaxPlayers(null);
                                         fetchGameSessions();
