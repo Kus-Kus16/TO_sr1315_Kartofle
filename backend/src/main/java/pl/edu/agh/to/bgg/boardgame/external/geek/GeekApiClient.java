@@ -1,10 +1,7 @@
 package pl.edu.agh.to.bgg.boardgame.external.geek;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 import pl.edu.agh.to.bgg.boardgame.external.geek.dto.GeekSearchResponseDTO;
 import pl.edu.agh.to.bgg.boardgame.external.geek.dto.GeekThingResponseDTO;
 
@@ -13,28 +10,20 @@ import java.util.Optional;
 
 @Service
 public class GeekApiClient {
-    private final static String BASE_URL = "https://boardgamegeek.com/xmlapi2/";
     private final String geekToken;
-    private final RestClient restClient;
+    private final GeekFeignClient geekFeignClient;
 
-    public GeekApiClient(@Value("${app.external-token}") String geekToken) {
+    public GeekApiClient(@Value("${app.external-token}") String geekToken, GeekFeignClient geekFeignClient) {
         this.geekToken = geekToken;
-        this.restClient = RestClient.builder()
-                .baseUrl(BASE_URL)
-                .build();
+        this.geekFeignClient = geekFeignClient;
     }
 
     public GeekSearchResponseDTO searchFor(String query) {
-        GeekSearchResponseDTO response = restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("search")
-                        .queryParam("query", query)
-                        .queryParam("type", "boardgame")
-                        .build())
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + geekToken)
-                .accept(MediaType.APPLICATION_XML)
-                .retrieve()
-                .body(GeekSearchResponseDTO.class);
+        GeekSearchResponseDTO response = geekFeignClient.search(
+                query,
+                "boardgame",
+                "Bearer " + geekToken
+        );
 
         if (response == null || response.isEmpty()) {
             return new GeekSearchResponseDTO(List.of());
@@ -44,16 +33,11 @@ public class GeekApiClient {
     }
 
     public Optional<GeekThingResponseDTO.ItemDetails> getById(int id) {
-        GeekThingResponseDTO response = restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("thing")
-                        .queryParam("id", id)
-                        .queryParam("type", "boardgame")
-                        .build())
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + geekToken)
-                .accept(MediaType.APPLICATION_XML)
-                .retrieve()
-                .body(GeekThingResponseDTO.class);
+        GeekThingResponseDTO response = geekFeignClient.thing(
+                id,
+                "boardgame",
+                "Bearer " + geekToken
+        );
 
         if (response == null || response.isEmpty()) {
             return Optional.empty();

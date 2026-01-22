@@ -19,15 +19,15 @@ public class BoardGameController {
     private final BoardGameService boardGameService;
     private final ExternalBoardGameService externalBoardGameService;
 
-    @Value("${app.boardgame.defaultPageSize}")
-    private int defaultPageSize;
+    private final int defaultPageSize;
+    private final int maxPageSize;
 
-    @Value("${app.boardgame.maxPageSize}")
-    private int maxPageSize;
-
-    public BoardGameController(BoardGameService boardGameService, ExternalBoardGameService externalBoardGameService) {
+    public BoardGameController(BoardGameService boardGameService, ExternalBoardGameService externalBoardGameService,
+                               @Value("${app.boardgame.default-pagesize}") int defaultPageSize, @Value("${app.boardgame.max-pagesize}") int maxPageSize) {
         this.boardGameService = boardGameService;
         this.externalBoardGameService = externalBoardGameService;
+        this.defaultPageSize = defaultPageSize;
+        this.maxPageSize = maxPageSize;
     }
 
 //    @GetMapping

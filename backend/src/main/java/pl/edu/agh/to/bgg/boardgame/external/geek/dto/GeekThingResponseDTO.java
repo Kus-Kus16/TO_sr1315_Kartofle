@@ -33,7 +33,7 @@ public record GeekThingResponseDTO (
             MaxPlayers maxplayers,
             PlayingTime playingtime
     ) {
-        public Name getBestName() {
+        public Name getPrimaryName() {
             return names.stream()
                     .filter(name -> Objects.equals(name.type, "primary"))
                     .findFirst()

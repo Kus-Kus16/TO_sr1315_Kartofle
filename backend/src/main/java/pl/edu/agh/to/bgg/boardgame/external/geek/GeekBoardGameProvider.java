@@ -39,7 +39,7 @@ public class GeekBoardGameProvider implements ExternalBoardGameProvider {
                 .orElseThrow(BoardGameNotFoundException::new);
 
         BoardGame boardGame = new BoardGame(
-                details.getBestName().value(),
+                details.getPrimaryName().value(),
                 details.description(),
                 details.minplayers().value(),
                 details.maxplayers().value(),
