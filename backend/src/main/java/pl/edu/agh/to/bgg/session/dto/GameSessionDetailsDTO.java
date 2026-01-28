@@ -1,6 +1,6 @@
 package pl.edu.agh.to.bgg.session.dto;
 
-import pl.edu.agh.to.bgg.boardgame.BoardGame;
+import pl.edu.agh.to.bgg.boardgame.dto.BoardGameDetailsDTO;
 import pl.edu.agh.to.bgg.session.GameSession;
 import pl.edu.agh.to.bgg.user.User;
 import pl.edu.agh.to.bgg.vote.dto.VoteDetailsDTO;
@@ -18,7 +18,7 @@ public record GameSessionDetailsDTO(
         int ownerId,
         Integer selectedBoardGameId,
         List<User> participants,
-        List<BoardGame> boardGames,
+        List<BoardGameDetailsDTO> boardGames,
         List<VoteDetailsDTO> votes
 ) {
     public static GameSessionDetailsDTO from(GameSession session) {
@@ -33,9 +33,15 @@ public record GameSessionDetailsDTO(
                         ? session.getSelectedBoardGame().getId()
                         : null,
                 new ArrayList<>(session.getParticipants()),
-                new ArrayList<>(session.getBoardGames()),
+                getBoardGames(session),
                 getVotes(session)
         );
+    }
+
+    private static List<BoardGameDetailsDTO> getBoardGames(GameSession session) {
+        return session.getBoardGames().stream()
+                .map(BoardGameDetailsDTO::from)
+                .toList();
     }
 
     private static List<VoteDetailsDTO> getVotes(GameSession session) {

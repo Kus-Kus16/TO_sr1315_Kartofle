@@ -1,9 +1,12 @@
-import api from "../../api/axios.tsx";
+import api, {baseURL} from "../../api/axios.tsx";
 import {useNavigate, useParams} from "react-router-dom";
-import BoardGameForm, {type BoardGameFormData} from "../../components/BoardGameForm.tsx";
+import {type BoardGameFormData} from "../../components/BoardGameForm.tsx";
 import {useEffect, useState} from "react";
-import {Alert, Box, CircularProgress} from "@mui/material";
+import {Alert, Box, Card, CardContent, CircularProgress, Stack, Typography} from "@mui/material";
 import type {BoardGameTypeDetails, BoardGameTypeUpdate} from "../../types/BoardGameType.ts";
+import TightLayoutBox from "../../layout/TightLayoutBox.tsx";
+import BoardGameForm from "../../components/BoardGameForm.tsx";
+import ImageMedia from "../../components/ImageMedia.tsx";
 
 export default function BoardGameEdit() {
     const { id } = useParams<{ id: string }>();
@@ -12,12 +15,22 @@ export default function BoardGameEdit() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [initialData, setInitialData] = useState<BoardGameTypeDetails | undefined>(undefined);
+    const [imagePreview, setImagePreview] = useState("");
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await api.get<BoardGameTypeDetails>(`/boardgames/${id}`);
-                setInitialData(response.data);
+                const data = response.data;
+                setInitialData(data);
+
+                setImagePreview(data.imageUrl
+                    ? `${baseURL}${data.imageUrl}`
+                    : ""
+                );
+                if (data.discontinued) {
+                    setError("Gra nie jest już dostępna");
+                }
             } catch {
                 setError("Nie udało się pobrać danych gry.");
             } finally {
@@ -28,10 +41,7 @@ export default function BoardGameEdit() {
         fetchData().then();
     }, [id]);
 
-    const handleEdit = async (
-        formData: BoardGameFormData,
-        setError: (msg: string) => void
-    ) => {
+    const handleEdit = async (formData: BoardGameFormData) => {
         try {
             const data = new FormData();
 
@@ -49,8 +59,6 @@ export default function BoardGameEdit() {
             if (formData.rulebookFile) {
                 data.append("rulebookFile", formData.rulebookFile);
             }
-
-            console.log(formData);
 
             await api.patch<BoardGameTypeUpdate>(`/boardgames/${id}`, data, {
                 headers: { "Content-Type": "multipart/form-data" },
@@ -79,5 +87,26 @@ export default function BoardGameEdit() {
         return null
     }
 
-    return <BoardGameForm initialData={initialData} onSubmit={handleEdit} formTitle={"Edytuj grę"} disableEdit={true}/>
+    return (
+        <TightLayoutBox>
+            <Card>
+                <ImageMedia displayImage={!!imagePreview} imageUrl={imagePreview} height={300} width={700}/>
+
+                <CardContent>
+                    <Stack spacing={2}>
+                        <Typography variant="h4" gutterBottom>
+                            Edytuj grę
+                        </Typography>
+
+                        {error && <Alert severity="error">{error}</Alert>}
+
+                        <BoardGameForm onSubmit={handleEdit} setError={setError}
+                                       setImagePreview={setImagePreview} disableEdit={true}
+                                       initialData={initialData}
+                        />
+                    </Stack>
+                </CardContent>
+            </Card>
+        </TightLayoutBox>
+    );
 }

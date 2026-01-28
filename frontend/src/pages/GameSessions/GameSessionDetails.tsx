@@ -10,6 +10,7 @@ import type {BoardGameTypeDetails} from "../../types/BoardGameType.ts";
 import {RefreshContext} from "../../components/RefreshContext.tsx";
 import VotingSection from "../../components/GameSessionVoting.tsx";
 import {AuthContext} from "../../auth/AuthContext.tsx";
+import WideLayoutBox from "../../layout/WideLayoutBox.tsx";
 
 export default function GameSessionDetails() {
     const { id } = useParams<{ id: string }>();
@@ -43,7 +44,6 @@ export default function GameSessionDetails() {
             setLoading(true);
             const { data } = await api.get<GameSessionTypeDetails>(`/sessions/${id}`);
             setSession(data);
-            console.log(data)
 
             const selected =
                 data.boardGames.find((game) => game.id === data.selectedBoardGameId)
@@ -74,48 +74,50 @@ export default function GameSessionDetails() {
 
     return (
         <RefreshContext.Provider value={{ refresh: fetchGameSession }}>
-        {session && (
-            <Stack direction="column" spacing={5} sx={{px: 15}}>
-                <Card sx={{ p: 2 }}>
-                    <CardContent>
-                        <Stack direction="row" spacing={3} justifyContent="space-between" alignItems={boardGame ? "start" :"end"}>
-                            <Stack sx={{ maxWidth: "60%" }} spacing={2}>
-                                <GameSessionInfo session={session} />
-
-                                {error && (
-                                    <Alert severity="error" sx={{mb: 2}}>
-                                        {error}
-                                    </Alert>
-                                )}
-                            </Stack>
-
-                            <Stack direction="column" spacing={3} >
-                                {boardGame && (
-                                    <Box sx={{ flexGrow: 1 }}>
-                                        <BoardGamePreview boardGame={boardGame} showActions={false}/>
-                                    </Box>
-                                )}
-
-                                <CardActions sx={{ justifyContent: "flex-end", p: 0}}>
-                                    <GameSessionActionButtons session={{
-                                        ...session,
-                                        selectedBoardGame: boardGame
-                                    }} setError={setError}/>
-                                </CardActions>
-                            </Stack>
-                        </Stack>
-                    </CardContent>
-                </Card>
-
-                {session.boardGames.length > 1 && (
+        <WideLayoutBox>
+            {session && (
+                <Stack direction="column" spacing={5}>
                     <Card sx={{ p: 2 }}>
                         <CardContent>
-                            <VotingSection session={session} currentUserId={currentUserId} isOwner={isOwner} disable={isDisabled}/>
+                            <Stack direction="row" spacing={3} justifyContent="space-between" alignItems={boardGame ? "start" :"end"}>
+                                <Stack sx={{ maxWidth: "60%" }} spacing={2}>
+                                    <GameSessionInfo session={session} />
+
+                                    {error && (
+                                        <Alert severity="error" sx={{mb: 2}}>
+                                            {error}
+                                        </Alert>
+                                    )}
+                                </Stack>
+
+                                <Stack direction="column" spacing={3} >
+                                    {boardGame && (
+                                        <Box sx={{ flexGrow: 1 }}>
+                                            <BoardGamePreview boardGame={boardGame} showActions={false}/>
+                                        </Box>
+                                    )}
+
+                                    <CardActions sx={{ justifyContent: "flex-end", p: 0}}>
+                                        <GameSessionActionButtons session={{
+                                            ...session,
+                                            selectedBoardGame: boardGame
+                                        }} setError={setError}/>
+                                    </CardActions>
+                                </Stack>
+                            </Stack>
                         </CardContent>
                     </Card>
-                )}
-            </Stack>
-        )}
+
+                    {session.boardGames.length > 1 && (
+                        <Card sx={{ p: 2 }}>
+                            <CardContent>
+                                <VotingSection session={session} currentUserId={currentUserId} isOwner={isOwner} disable={isDisabled}/>
+                            </CardContent>
+                        </Card>
+                    )}
+                </Stack>
+            )}
+        </WideLayoutBox>
         </RefreshContext.Provider>
     );
 }

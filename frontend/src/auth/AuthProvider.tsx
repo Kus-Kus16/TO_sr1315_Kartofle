@@ -3,17 +3,17 @@ import { AuthContext } from "./AuthContext";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
     const [username, setUsername] = useState<string | null>(() => {
-        return localStorage.getItem("username");
+        return sessionStorage.getItem("username");
     });
 
     const login = (name: string) => {
         setUsername(name);
-        localStorage.setItem("username", name);
+        sessionStorage.setItem("username", name);
     };
 
     const logout = () => {
         setUsername(null);
-        localStorage.removeItem("username");
+        sessionStorage.removeItem("username");
     };
 
     return (

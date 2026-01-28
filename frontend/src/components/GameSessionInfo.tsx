@@ -8,6 +8,8 @@ export default function GameSessionInfo({ session }: { session: GameSessionTypeD
 
     const hasSelectedGame = !!session.selectedBoardGameId;
 
+    console.log(session.selectedBoardGameId)
+
     return (
         <Stack spacing={2}>
             <Typography variant="h4">{session.title}</Typography>

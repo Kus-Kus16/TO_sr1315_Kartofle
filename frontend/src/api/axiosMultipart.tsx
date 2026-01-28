@@ -6,7 +6,7 @@ const apiMultipart = axios.create({
 });
 
 apiMultipart.interceptors.request.use((config) => {
-    const login = localStorage.getItem("username");
+    const login = sessionStorage.getItem("username");
     if (login) {
         config.headers["X-User-Login"] = login;
     }

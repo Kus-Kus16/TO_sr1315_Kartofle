@@ -21,3 +21,15 @@ export interface BoardGameTypeDetails extends BoardGameTypeCreate {
     rulebookUrl?: string;
 }
 
+export interface ExternalBoardGameTypeEntry {
+    id: number;
+    name: string;
+    releaseYear?: number;
+}
+
+export interface BoardGameTypePreview {
+    id: number;
+    title: string;
+    minPlayers: number;
+    maxPlayers: number;
+}

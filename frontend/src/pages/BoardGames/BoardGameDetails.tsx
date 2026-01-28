@@ -1,12 +1,13 @@
 import {useContext, useEffect, useState} from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Box, Typography, Card, CardMedia, CardContent, CardActions, Button, CircularProgress, Alert, Stack, Tooltip } from "@mui/material";
+import { Box, Typography, Card, CardContent, CardActions, Button, CircularProgress, Alert, Stack, Tooltip } from "@mui/material";
 import type {BoardGameTypeDetails} from "../../types/BoardGameType.ts";
 import api, {baseURL} from "../../api/axios";
 import {Link as RouterLink} from "react-router";
 import {AuthContext} from "../../auth/AuthContext.tsx";
-import {ImageNotSupported} from "@mui/icons-material";
 import ConfirmDialog from "../../components/ConfirmDialog.tsx";
+import WideLayoutBox from "../../layout/WideLayoutBox.tsx";
+import ImageMedia from "../../components/ImageMedia.tsx";
 
 export default function BoardGameDetails() {
     const { id } = useParams<{ id: string }>();
@@ -51,7 +52,7 @@ export default function BoardGameDetails() {
     }
 
     return (
-        <Box sx={{ p: 3, px: 10, margin: 'auto' }}>
+        <WideLayoutBox>
             {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
                     <CircularProgress />
@@ -61,97 +62,84 @@ export default function BoardGameDetails() {
             {boardGame && (
                 <>
                 <Card>
-                    {boardGame.imageUrl ? (
-                        <CardMedia
-                            component="img"
-                            height="300"
-                            image={`${baseURL}${boardGame.imageUrl}`}
-                            alt={boardGame.title}
+                    <Stack direction="row" spacing={2}>
+                        <ImageMedia displayImage={!!boardGame.imageUrl} imageUrl={`${baseURL}${boardGame.imageUrl}`}
+                                    altText={boardGame.title} width={"75%"} maxHeight={"500px"}
                         />
-                    ) : (
-                        <Box
-                            sx={{
-                                height: 300,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                bgcolor: "grey.100"
-                            }}
-                        >
-                            <ImageNotSupported sx={{ fontSize: 80, color: "grey.400" }} />
+
+                        <Box width="100%" display="flex" flexDirection="column" justifyContent="space-evenly" pl={2}>
+                            <CardContent sx={{p: 3}}>
+                                {error && (
+                                    <Alert severity="error" sx={{mb: 2}}>
+                                        {error}
+                                    </Alert>
+                                )}
+                                <Typography variant="h4" gutterBottom>
+                                    {boardGame.title}
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: 'text.secondary', mb: 1 }}>
+                                    Gracze: {boardGame.minPlayers} - {boardGame.maxPlayers}
+                                </Typography>
+                                <Typography variant="body1" sx={{ color: 'text.secondary', mb: 1 }}>
+                                    Czas gry: {boardGame.minutesPlaytime}'
+                                </Typography>
+                                <Typography variant="body2" sx={{ mt: 2 }}>
+                                    {boardGame.description}
+                                </Typography>
+                            </CardContent>
+
+                            <CardActions sx={{p: 3}}>
+                                {!boardGame.discontinued ? (
+                                    <Stack direction="row" spacing={2}>
+                                        <Tooltip title={!auth.isAuthenticated ? "Musisz być zalogowany, aby stworzyć sesję" : ""}>
+                                            <Box display="inline-flex">
+                                                <Button
+                                                    size="small"
+                                                    variant="contained"
+                                                    component={RouterLink}
+                                                    to={`/sessions/new?boardGameId=${boardGame.id}`}
+                                                    disabled={!auth.isAuthenticated}
+                                                >
+                                                    Stwórz sesję
+                                                </Button>
+                                            </Box>
+                                        </Tooltip>
+
+                                        {auth.isAuthenticated && (
+                                            <>
+                                                <Button
+                                                    size="medium"
+                                                    color="secondary"
+                                                    onClick={() => navigate(`/boardgames/${boardGame.id}/edit`)}
+                                                >
+                                                    Edytuj
+                                                </Button>
+                                                <Button
+                                                    size="medium"
+                                                    color="error"
+                                                    onClick={() => setOpenDeleteDialog(true)}
+                                                >
+                                                    Usuń
+                                                </Button>
+                                            </>
+                                        )}
+
+                                        {boardGame.rulebookUrl && (
+                                            <Button
+                                                size="medium"
+                                                color="info"
+                                                href={`${baseURL}${boardGame.rulebookUrl}`}
+                                            >
+                                                Instrukcja
+                                            </Button>
+                                        )}
+                                    </Stack>
+                                ) : (
+                                    <Alert severity="info">Gra nie jest już dostępna</Alert>
+                                )}
+                            </CardActions>
                         </Box>
-                    )}
-
-                    <CardContent sx={{p: 3}}>
-                        {error && (
-                            <Alert severity="error" sx={{mb: 2}}>
-                                {error}
-                            </Alert>
-                        )}
-                        <Typography variant="h4" gutterBottom>
-                            {boardGame.title}
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 1 }}>
-                            Gracze: {boardGame.minPlayers} - {boardGame.maxPlayers}
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 1 }}>
-                            Czas gry: {boardGame.minutesPlaytime}'
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 2 }}>
-                            {boardGame.description}
-                        </Typography>
-                    </CardContent>
-
-                    <CardActions sx={{p: 3}}>
-                        {!boardGame.discontinued ? (
-                            <Stack direction="row" spacing={2}>
-                                <Tooltip title={!auth.isAuthenticated ? "Musisz być zalogowany, aby stworzyć sesję" : ""}>
-                                    <Box display="inline-flex">
-                                        <Button
-                                            size="small"
-                                            variant="contained"
-                                            component={RouterLink}
-                                            to={`/sessions/new?boardGameId=${boardGame.id}`}
-                                            disabled={!auth.isAuthenticated}
-                                        >
-                                            Stwórz sesję
-                                        </Button>
-                                    </Box>
-                                </Tooltip>
-
-                                {auth.isAuthenticated && (
-                                    <>
-                                        <Button
-                                            size="medium"
-                                            color="secondary"
-                                            onClick={() => navigate(`/boardgames/${boardGame.id}/edit`)}
-                                        >
-                                            Edytuj
-                                        </Button>
-                                        <Button
-                                            size="medium"
-                                            color="error"
-                                            onClick={handleDelete}
-                                        >
-                                            Usuń
-                                        </Button>
-                                    </>
-                                )}
-
-                                {boardGame.rulebookUrl && (
-                                    <Button
-                                        size="medium"
-                                        color="info"
-                                        href={`${baseURL}${boardGame.rulebookUrl}`}
-                                    >
-                                        Instrukcja
-                                    </Button>
-                                )}
-                            </Stack>
-                        ) : (
-                            <Alert severity="info">Gra nie jest już dostępna</Alert>
-                        )}
-                    </CardActions>
+                    </Stack>
                 </Card>
 
                 <ConfirmDialog
@@ -167,6 +155,6 @@ export default function BoardGameDetails() {
                 />
                 </>
             )}
-        </Box>
+        </WideLayoutBox>
     );
 }

@@ -1,13 +1,13 @@
 import React, {useEffect, useState } from "react";
-import type {BoardGameTypeDetails} from "../types/BoardGameType.ts";
+import type {BoardGameTypePreview} from "../types/BoardGameType.ts";
 import api from "../api/axios.tsx";
 import { TextField, Autocomplete, Stack, Chip } from "@mui/material";
 
 interface BoardGameSelectorProps {
-    selectedBoardGames: BoardGameTypeDetails[];
-    setSelectedBoardGames: React.Dispatch<React.SetStateAction<BoardGameTypeDetails[]>>;
-    setMinPlayersGame: React.Dispatch<React.SetStateAction<BoardGameTypeDetails | undefined>>;
-    setMaxPlayersGame: React.Dispatch<React.SetStateAction<BoardGameTypeDetails | undefined>>;
+    selectedBoardGames: BoardGameTypePreview[];
+    setSelectedBoardGames: React.Dispatch<React.SetStateAction<BoardGameTypePreview[]>>;
+    setMinPlayersGame: React.Dispatch<React.SetStateAction<BoardGameTypePreview | undefined>>;
+    setMaxPlayersGame: React.Dispatch<React.SetStateAction<BoardGameTypePreview | undefined>>;
     fieldErrors?: {
         games?: string;
     };
@@ -17,13 +17,13 @@ interface BoardGameSelectorProps {
 export default function BoardGameSelector({ selectedBoardGames, setSelectedBoardGames, setMinPlayersGame,
                                               setMaxPlayersGame, fieldErrors, initialBoardGameId }: BoardGameSelectorProps) {
 
-    const [allBoardGames, setAllBoardGames] = useState<BoardGameTypeDetails[]>([]);
+    const [allBoardGames, setAllBoardGames] = useState<BoardGameTypePreview[]>([]);
     const [inputValue, setInputValue] = useState("");
 
     useEffect(() => {
         const fetchBoardGames = async () => {
             try {
-                const res = await api.get<BoardGameTypeDetails[]>("/boardgames");
+                const res = await api.get<BoardGameTypePreview[]>("/boardgames/previews");
                 setAllBoardGames(res.data);
 
                 if (initialBoardGameId) {
@@ -44,7 +44,7 @@ export default function BoardGameSelector({ selectedBoardGames, setSelectedBoard
 
     const availableGames = allBoardGames.filter(bg => !selectedBoardGames.some(s => s.id === bg.id));
 
-    const addGame = (game: BoardGameTypeDetails) => {
+    const addGame = (game: BoardGameTypePreview) => {
         if (!selectedBoardGames.some(bg => bg.id === game.id)) {
             setSelectedBoardGames(prev => [...prev, game]);
             setMinPlayersGame(prev => !prev ? game : (game.minPlayers > prev.minPlayers ? game : prev));
@@ -53,7 +53,7 @@ export default function BoardGameSelector({ selectedBoardGames, setSelectedBoard
         setInputValue("");
     };
 
-    const removeGame = (game: BoardGameTypeDetails) => {
+    const removeGame = (game: BoardGameTypePreview) => {
         setSelectedBoardGames(prev => {
             const updated = prev.filter(bg => bg.id !== game.id);
 

@@ -1,19 +1,13 @@
 import {
-    Box,
-    Card,
-    CardContent,
     CardActions,
-    CardMedia,
     TextField,
-    Typography,
     Button,
     Stack,
-    Alert,
     Chip
 } from "@mui/material";
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ImageNotSupported, PictureAsPdf, Photo } from '@mui/icons-material';
+import { PictureAsPdf, Photo } from '@mui/icons-material';
 import type { BoardGameTypeDetails } from "../types/BoardGameType.ts";
 import {baseURL} from "../api/axios.tsx";
 
@@ -33,11 +27,9 @@ export interface BoardGameFormData {
 
 export interface BoardGameFormProps {
     initialData?: BoardGameTypeDetails;
-    onSubmit: (
-        formData: BoardGameFormData,
-        setError: (msg: string) => void
-    ) => void;
-    formTitle: string;
+    onSubmit: (formData: BoardGameFormData) => void;
+    setError: (msg: string) => void;
+    setImagePreview: (preview: string) => void;
     disableEdit: boolean;
 }
 
@@ -45,24 +37,23 @@ const MAX_PDF_SIZE_MB = 10;
 const MAX_IMAGE_SIZE_MB = 5;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
-export default function BoardGameForm(props: BoardGameFormProps) {
+export default function BoardGameForm({ initialData, onSubmit, setError, setImagePreview, disableEdit } : BoardGameFormProps) {
     const navigate = useNavigate();
     const imgInputRef = useRef<HTMLInputElement | null>(null);
     const pdfInputRef = useRef<HTMLInputElement | null>(null);
 
     const [form, setForm] = useState<BoardGameFormData>({
-        title: props.initialData?.title || "",
-        description: props.initialData?.description || "",
-        minPlayers: props.initialData?.minPlayers || 1,
-        maxPlayers: props.initialData?.maxPlayers || 1,
-        minutesPlaytime: props.initialData?.minutesPlaytime || 30,
+        title: initialData?.title || "",
+        description: initialData?.description || "",
+        minPlayers: initialData?.minPlayers || 1,
+        maxPlayers: initialData?.maxPlayers || 1,
+        minutesPlaytime: initialData?.minutesPlaytime || 30,
         imageFile: null,
         rulebookFile: null,
-        existingImageUrl: props.initialData?.imageUrl,
-        existingRulebookUrl: props.initialData?.rulebookUrl
+        existingImageUrl: initialData?.imageUrl,
+        existingRulebookUrl: initialData?.rulebookUrl
     });
 
-    const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState<{
         title?: string;
         minPlayers?: string;
@@ -70,11 +61,7 @@ export default function BoardGameForm(props: BoardGameFormProps) {
         minutesPlaytime?: string;
     }>({});
 
-    const [imagePreview, setImagePreview] = useState<string>(
-        props.initialData?.imageUrl
-            ? `${baseURL}${props.initialData.imageUrl}`
-            : ""
-    );
+    const [hasImage, setHasImage] = useState<boolean>(!!initialData?.imageUrl);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -105,6 +92,7 @@ export default function BoardGameForm(props: BoardGameFormProps) {
 
         setForm(prev => ({ ...prev, imageFile: file, existingImageUrl: undefined }));
         setImagePreview(URL.createObjectURL(file));
+        setHasImage(true)
     };
 
     const handleRulebookChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,6 +117,7 @@ export default function BoardGameForm(props: BoardGameFormProps) {
     const removeExistingImage = () => {
         setForm(prev => ({ ...prev, existingImageUrl: undefined, imageFile: null }));
         setImagePreview("");
+        setHasImage(false);
         if (imgInputRef.current) imgInputRef.current.value = "";
     };
 
@@ -160,190 +149,153 @@ export default function BoardGameForm(props: BoardGameFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validateFields()) {
-            props.onSubmit(form, setError);
+            onSubmit(form);
         }
     };
 
-    if (props.initialData?.discontinued) {
-        return <Alert severity={"error"}>Gra nie jest już dostępna</Alert>;
-    }
-
     return (
-        <Box sx={{ maxWidth: 700, margin: "auto" }}>
-            <Card>
-                {imagePreview ? (
-                    <CardMedia
-                        component="img"
-                        height="300"
-                        image={imagePreview}
-                        alt="Podgląd obrazka"
-                    />
-                ) : (
-                    <Box
-                        sx={{
-                            height: 300,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            bgcolor: "grey.100"
-                        }}
-                    >
-                        <ImageNotSupported sx={{ fontSize: 80, color: "grey.400" }} />
-                    </Box>
-                )}
+        <Stack spacing={2} component="form" onSubmit={handleSubmit}>
+            <TextField
+                label="Tytuł"
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                required
+                fullWidth
+                disabled={disableEdit}
+                error={!!fieldErrors.title}
+                helperText={fieldErrors.title}
+            />
 
-                <CardContent component="form" onSubmit={handleSubmit}>
-                    <Stack spacing={2}>
-                        <Typography variant="h4" gutterBottom>
-                            {props.formTitle}
-                        </Typography>
+            <TextField
+                label="Opis"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                fullWidth
+            />
 
-                        {error && <Alert severity="error">{error}</Alert>}
+            <Stack direction="row" spacing={2}>
+                <TextField
+                    label="Min. graczy"
+                    name="minPlayers"
+                    type="number"
+                    value={form.minPlayers}
+                    onChange={handleChange}
+                    slotProps={{
+                        input: {
+                            inputProps: {
+                                min: 1,
+                                max: form.maxPlayers
+                            }
+                        }
+                    }}
+                    required
+                    fullWidth
+                    disabled={disableEdit}
+                    error={!!fieldErrors.minPlayers}
+                    helperText={fieldErrors.minPlayers}
+                />
 
-                        <TextField
-                            label="Tytuł"
-                            name="title"
-                            value={form.title}
-                            onChange={handleChange}
-                            required
-                            fullWidth
-                            disabled={props.disableEdit}
-                            error={!!fieldErrors.title}
-                            helperText={fieldErrors.title}
-                        />
+                <TextField
+                    label="Max. graczy"
+                    name="maxPlayers"
+                    type="number"
+                    value={form.maxPlayers}
+                    onChange={handleChange}
+                    slotProps={{
+                        input: {
+                            inputProps: {
+                                min: form.minPlayers,
+                                max: 20
+                            }
+                        }
+                    }}
+                    required
+                    fullWidth
+                    disabled={disableEdit}
+                    error={!!fieldErrors.maxPlayers}
+                    helperText={fieldErrors.maxPlayers}
+                />
+            </Stack>
 
-                        <TextField
-                            label="Opis"
-                            name="description"
-                            value={form.description}
-                            onChange={handleChange}
-                            multiline
-                            rows={4}
-                            fullWidth
-                        />
+            <TextField
+                label="Czas gry (minuty)"
+                name="minutesPlaytime"
+                type="number"
+                value={form.minutesPlaytime}
+                onChange={handleChange}
+                slotProps={{
+                    input: { inputProps: { min: 1, max: 600 } }
+                }}
+                required
+                fullWidth
+                error={!!fieldErrors.minutesPlaytime}
+                helperText={fieldErrors.minutesPlaytime}
+            />
 
-                        <Stack direction="row" spacing={2}>
-                            <TextField
-                                label="Min. graczy"
-                                name="minPlayers"
-                                type="number"
-                                value={form.minPlayers}
-                                onChange={handleChange}
-                                slotProps={{
-                                    input: {
-                                        inputProps: {
-                                            min: 1,
-                                            max: form.maxPlayers
-                                        }
-                                    }
-                                }}
-                                required
-                                fullWidth
-                                disabled={props.disableEdit}
-                                error={!!fieldErrors.minPlayers}
-                                helperText={fieldErrors.minPlayers}
-                            />
+            <Button variant="outlined" component="label">
+                {hasImage ? "Zmień obrazek" : "Dodaj obrazek"}
+                <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    ref={imgInputRef}
+                    onChange={handleImageChange}
+                />
+            </Button>
 
-                            <TextField
-                                label="Max. graczy"
-                                name="maxPlayers"
-                                type="number"
-                                value={form.maxPlayers}
-                                onChange={handleChange}
-                                slotProps={{
-                                    input: {
-                                        inputProps: {
-                                            min: form.minPlayers,
-                                            max: 20
-                                        }
-                                    }
-                                }}
-                                required
-                                fullWidth
-                                disabled={props.disableEdit}
-                                error={!!fieldErrors.maxPlayers}
-                                helperText={fieldErrors.maxPlayers}
-                            />
-                        </Stack>
+            {hasImage && (
+                <Chip
+                    icon={<Photo />}
+                    label={form.imageFile?.name || "Aktualny obrazek"}
+                    onDelete={removeExistingImage}
+                    color="secondary"
+                    variant="outlined"
+                />
+            )}
 
-                        <TextField
-                            label="Czas gry (minuty)"
-                            name="minutesPlaytime"
-                            type="number"
-                            value={form.minutesPlaytime}
-                            onChange={handleChange}
-                            slotProps={{
-                                input: { inputProps: { min: 1, max: 600 } }
-                            }}
-                            required
-                            fullWidth
-                            error={!!fieldErrors.minutesPlaytime}
-                            helperText={fieldErrors.minutesPlaytime}
-                        />
+            <Button variant="outlined" component="label">
+                {form.rulebookFile || form.existingRulebookUrl
+                    ? "Zmień instrukcję"
+                    : "Dodaj instrukcję (PDF)"}
+                <input
+                    type="file"
+                    hidden
+                    accept="application/pdf"
+                    ref={pdfInputRef}
+                    onChange={handleRulebookChange}
+                />
+            </Button>
 
-                        <Button variant="outlined" component="label">
-                            {imagePreview ? "Zmień obrazek" : "Dodaj obrazek"}
-                            <input
-                                type="file"
-                                hidden
-                                accept="image/*"
-                                ref={imgInputRef}
-                                onChange={handleImageChange}
-                            />
-                        </Button>
+            {(form.rulebookFile || form.existingRulebookUrl) && (
+                <Chip
+                    icon={<PictureAsPdf />}
+                    label={form.rulebookFile?.name || "Aktualna instrukcja"}
+                    component={"a"}
+                    href={`${baseURL}${form.existingRulebookUrl}`}
+                    onDelete={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        removeExistingRulebook();
+                    }}
+                    color="secondary"
+                    variant="outlined"
+                />
+            )}
 
-                        {imagePreview && (
-                            <Chip
-                                icon={<Photo />}
-                                label={form.imageFile?.name || "Aktualny obrazek"}
-                                onDelete={removeExistingImage}
-                                color="secondary"
-                                variant="outlined"
-                            />
-                        )}
-
-                        <Button variant="outlined" component="label">
-                            {form.rulebookFile || form.existingRulebookUrl
-                                ? "Zmień instrukcję"
-                                : "Dodaj instrukcję (PDF)"}
-                            <input
-                                type="file"
-                                hidden
-                                accept="application/pdf"
-                                ref={pdfInputRef}
-                                onChange={handleRulebookChange}
-                            />
-                        </Button>
-
-                        {(form.rulebookFile || form.existingRulebookUrl) && (
-                            <Chip
-                                icon={<PictureAsPdf />}
-                                label={form.rulebookFile?.name || "Aktualna instrukcja"}
-                                component={"a"}
-                                href={`${baseURL}${form.existingRulebookUrl}`}
-                                onDelete={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    removeExistingRulebook();
-                                }}
-                                color="secondary"
-                                variant="outlined"
-                            />
-                        )}
-                    </Stack>
-
-                    <CardActions sx={{ mt: 2, px: 0 }}>
-                        <Stack direction="row" spacing={2}>
-                            <Button type="submit" variant="contained">
-                                Zapisz
-                            </Button>
-                            <Button color="error" variant="outlined" onClick={() => navigate(-1)}>
-                                Anuluj
-                            </Button>
-                        </Stack>
-                    </CardActions>
-                </CardContent>
-            </Card>
-        </Box>
+            <CardActions sx={{ mt: 2, px: 0 }}>
+                <Stack direction="row" spacing={2}>
+                    <Button type="submit" variant="contained">
+                        Zapisz
+                    </Button>
+                    <Button color="error" variant="outlined" onClick={() => navigate(-1)}>
+                        Anuluj
+                    </Button>
+                </Stack>
+            </CardActions>
+        </Stack>
     );
 }

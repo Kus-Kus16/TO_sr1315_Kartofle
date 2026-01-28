@@ -47,14 +47,14 @@ export default function GameSessionListUser() {
 
     return (
         <RefreshContext.Provider value={{ refresh: fetchGameSessions }}>
-            <Box sx={{p: 3}}>
+            <Box sx={{m: 3}}>
                 <Typography variant="h4" gutterBottom>
                     Twoje sesje
                 </Typography>
                 <Divider />
             </Box>
 
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ m: 3 }}>
                 {loading && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
                         <CircularProgress />

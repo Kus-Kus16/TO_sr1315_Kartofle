@@ -1,7 +1,6 @@
 package pl.edu.agh.to.bgg.user;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

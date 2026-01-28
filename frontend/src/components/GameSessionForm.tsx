@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-    Box,
     Card,
     CardContent,
     CardActions,
@@ -12,9 +11,10 @@ import {
     Divider
 } from "@mui/material";
 import type { GameSessionTypeCreate } from "../types/GameSessionType.ts";
-import type { BoardGameTypeDetails } from "../types/BoardGameType.ts";
+import type { BoardGameTypePreview } from "../types/BoardGameType.ts";
 import { useNavigate } from "react-router-dom";
 import BoardGameSelector from "./BoardGameSelector";
+import TightLayoutBox from "../layout/TightLayoutBox.tsx";
 
 export interface GameSessionFormProps {
     initialData?: GameSessionTypeCreate;
@@ -43,9 +43,9 @@ export default function GameSessionForm({ initialData, initialBoardGameId, onSub
         games?: string;
     }>({});
 
-    const [selectedBoardGames, setSelectedBoardGames] = useState<BoardGameTypeDetails[]>([]);
-    const [minPlayersGame, setMinPlayersGame] = useState<BoardGameTypeDetails>();
-    const [maxPlayersGame, setMaxPlayersGame] = useState<BoardGameTypeDetails>();
+    const [selectedBoardGames, setSelectedBoardGames] = useState<BoardGameTypePreview[]>([]);
+    const [minPlayersGame, setMinPlayersGame] = useState<BoardGameTypePreview>();
+    const [maxPlayersGame, setMaxPlayersGame] = useState<BoardGameTypePreview>();
 
     const navigate = useNavigate();
 
@@ -89,7 +89,7 @@ export default function GameSessionForm({ initialData, initialBoardGameId, onSub
     };
 
     return (
-        <Box sx={{ maxWidth: 700, margin: "auto" }}>
+        <TightLayoutBox>
             <Card sx={{ p: 2 }}>
                 <CardContent component="form" onSubmit={handleSubmit}>
                     <Stack spacing={2}>
@@ -172,6 +172,6 @@ export default function GameSessionForm({ initialData, initialBoardGameId, onSub
                     </CardActions>
                 </CardContent>
             </Card>
-        </Box>
+        </TightLayoutBox>
     );
 }

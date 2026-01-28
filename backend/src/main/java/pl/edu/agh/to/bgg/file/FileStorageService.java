@@ -1,7 +1,6 @@
 package pl.edu.agh.to.bgg.file;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import pl.edu.agh.to.bgg.exception.FileStorageException;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ public class FileStorageService {
         this.fileStoragePathResolver = fileStoragePathResolver;
     }
 
-    public Path save(MultipartFile file, StoredFileType fileType, String fileName) {
+    public Path save(byte[] content, StoredFileType fileType, String fileName) {
         try {
             String storageDirPath = fileStoragePathResolver.resolve(fileType);
 
@@ -25,7 +24,7 @@ public class FileStorageService {
             Files.createDirectories(targetDir);
 
             Path filePath = targetDir.resolve(fileName);
-            file.transferTo(filePath.toFile());
+            Files.write(filePath, content);
 
             return filePath;
         } catch (IOException e) {

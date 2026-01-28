@@ -1,10 +1,10 @@
-import { Card, CardContent, CardActions, Typography, Button, CardActionArea, CardMedia, Tooltip, Box } from "@mui/material";
+import { Card, CardContent, CardActions, Typography, Button, CardActionArea, Tooltip, Box } from "@mui/material";
 import type { BoardGameTypeDetails } from "../types/BoardGameType.ts";
 import { Link as RouterLink } from "react-router-dom";
 import {useContext} from "react";
 import {AuthContext} from "../auth/AuthContext.tsx";
-import {ImageNotSupported} from "@mui/icons-material";
 import {baseURL} from "../api/axios.tsx";
+import ImageMedia from "./ImageMedia.tsx";
 
 interface BoardGamePreviewProps {
     boardGame: BoardGameTypeDetails;
@@ -15,29 +15,12 @@ export default function BoardGamePreview({ boardGame, showActions }: BoardGamePr
     const auth = useContext(AuthContext);
 
     return (
-        <Card sx={{ minWidth: 240, maxWidth: 345 }}>
+        <Card sx={{ minWidth: 200, maxWidth: 345 }}>
             <CardActionArea component={RouterLink} to={`/boardgames/${boardGame.id}`} sx={{ height: "100%" }}>
 
-                {boardGame.imageUrl ? (
-                    <CardMedia
-                        component="img"
-                        height="140"
-                        image={`${baseURL}${boardGame.imageUrl}`}
-                        alt={boardGame.title}
-                    />
-                ) : (
-                    <Box
-                        sx={{
-                            height: 140,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            bgcolor: "grey.100"
-                        }}
-                    >
-                        <ImageNotSupported sx={{ fontSize: 80, color: "grey.400" }} />
-                    </Box>
-                )}
+                <ImageMedia displayImage={!!boardGame.imageUrl} imageUrl={`${baseURL}${boardGame.imageUrl}`}
+                            altText={boardGame.title}
+                />
 
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div">

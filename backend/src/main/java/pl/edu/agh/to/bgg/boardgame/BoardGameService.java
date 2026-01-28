@@ -1,6 +1,8 @@
 package pl.edu.agh.to.bgg.boardgame;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pl.edu.agh.to.bgg.boardgame.dto.BoardGameCreateDTO;
@@ -9,6 +11,7 @@ import pl.edu.agh.to.bgg.exception.BoardGameNotFoundException;
 import pl.edu.agh.to.bgg.file.StoredFile;
 import pl.edu.agh.to.bgg.file.StoredFileService;
 
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -26,6 +29,10 @@ public class BoardGameService {
 
     public List<BoardGame> getAvailableBoardGames() {
         return boardGameRepository.findAllByDiscontinuedFalse();
+    }
+
+    public Page<BoardGame> getAvailableBoardGamesPage(int page, int size) {
+        return boardGameRepository.findAllByDiscontinuedFalse(PageRequest.of(page, size));
     }
 
     public BoardGame getBoardGame(int id) {
@@ -54,9 +61,13 @@ public class BoardGameService {
             boardGame.setRulebookFile(rulebook);
         }
 
-        return boardGameRepository.save(boardGame);
+        return saveBoardGame(boardGame);
     }
 
+    @Transactional
+    public BoardGame saveBoardGame(BoardGame boardGame) {
+        return boardGameRepository.save(boardGame);
+    }
 
     @Transactional
     public BoardGame updateBoardGame(int id, BoardGameUpdateDTO dto) {
@@ -80,7 +91,7 @@ public class BoardGameService {
     }
 
     @Transactional
-    public void deleteBoardGame(int boardGameId) {
+    public void tryDeleteBoardGame(int boardGameId) {
         BoardGame boardGame = boardGameRepository
                 .findById(boardGameId)
                 .orElseThrow(BoardGameNotFoundException::new);
